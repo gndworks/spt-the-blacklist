@@ -1,0 +1,22 @@
+{
+  "startDelayInSeconds": 7,
+  "disableBsgBlacklist": true,
+  "canSellBlacklistedItemsOnFlea": true,
+  "blacklistedItemPriceMultiplier": 2,
+  "blacklistedAmmoAdditionalPriceMultiplier": 1.8,
+  "blacklistedArmourAdditionalPriceMultiplier": 1.8,
+  "customItemPriceMultipliers": [
+    {
+      "itemId": "5fc382a9d724d907e2077dab",
+      "priceMultiplier": 1.5
+    },
+    {
+      "itemId": "5fc22d7c187fea44d52eda44",
+      "priceMultiplier": 3
+    },
+    {
+      "itemId": "627e14b21713922ded6f2c15",
+      "priceMultiplier": 10
+    }
+  ]
+}
