@@ -31,6 +31,7 @@ import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
+import { RagfairOfferService } from "@spt-aki/services/RagfairOfferService";
 
 class TheBlacklistMod implements IPostDBLoadMod {
   private logger: ILogger;
@@ -53,9 +54,10 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const ragfairServer = container.resolve<RagfairServer>("RagfairServer");
     const ragfairPriceService = container.resolve<RagfairPriceService>("RagfairPriceService");
     const ragfairOfferGenerator = container.resolve<RagfairOfferGenerator>("RagfairOfferGenerator");
+    const ragfairOfferService = container.resolve<RagfairOfferService>("RagfairOfferService");
 
     // Easiest way to make mod compatible with Lua's flea updater is let the user choose when to load the mod...
-    setTimeout(() => this.initialiseMod(tables, ragfairConfig, ragfairServer, ragfairPriceService, ragfairOfferGenerator), config.startDelayInSeconds * 1000);
+    setTimeout(() => this.initialiseMod(tables, ragfairConfig, ragfairServer, ragfairPriceService, ragfairOfferGenerator, ragfairOfferService), config.startDelayInSeconds * 1000);
   }
 
   private initialiseMod(
@@ -63,7 +65,8 @@ class TheBlacklistMod implements IPostDBLoadMod {
     ragfairConfig: IRagfairConfig, 
     ragfairServer: RagfairServer,
     ragfairPriceService: RagfairPriceService,
-    ragfairOfferGenerator: RagfairOfferGenerator
+    ragfairOfferGenerator: RagfairOfferGenerator,
+    ragfairOfferService: RagfairOfferService
   ): void {
     const itemTable = tables.templates.items;
     const handbookItems = tables.templates.handbook.Items;
@@ -82,15 +85,15 @@ class TheBlacklistMod implements IPostDBLoadMod {
 
       if (!itemProps.CanSellOnRagfair) {
         if (!prices[item._id]) {
-          this.logger.warning(`[${this.modName}] Could not find flea prices for ${item._id} - ${item._name}`);
-          prices[item._id] = advancedConfig.defaultPriceWhenPriceDoesntExist;
+          this.logger.debug(`${this.modName} Could not find flea prices for ${item._id} - ${item._name}. Skipping item update.`);
+          return;
         }
         const itemSpecificPriceMultiplier = config.customItemPriceMultipliers.find(conf => conf.itemId === item._id)?.priceMultiplier || 1;
         prices[item._id] *= config.blacklistedItemPriceMultiplier * itemSpecificPriceMultiplier;
         itemProps.CanSellOnRagfair = config.canSellBlacklistedItemsOnFlea;
 
-        this.updateAmmoPrices(item, prices);
-        this.updateArmourPrices(item, prices);
+        this.updatePriceIfAmmo(item, prices);
+        this.updatePriceIfArmour(item, prices);
 
         blacklistedItemsCount++;
       }
@@ -103,7 +106,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     });
   }
 
-  private updateAmmoPrices(item: ITemplateItem, prices: Record<string, number>) {
+  private updatePriceIfAmmo(item: ITemplateItem, prices: Record<string, number>) {
     if (item._props.ammoType === "bullet") {
       // Note that this price can be affected by other mods like Lua's market updater and the global price multiplier already.
       const currentFleaPrice = prices[item._id];
@@ -118,7 +121,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     return currentFleaPrice * config.blacklistedAmmoAdditionalPriceMultiplier * item._props.PenetrationPower / baselinePen;
   }
 
-  private updateArmourPrices(item: ITemplateItem, prices: Record<string, number>) {
+  private updatePriceIfArmour(item: ITemplateItem, prices: Record<string, number>) {
     if (Number(item._props.armorClass) > 0) {
 
       prices[item._id] = this.getUpdatedArmourPrice(item, prices);
