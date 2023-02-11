@@ -4,5 +4,9 @@
   "bulletDamageMultiplierRedutionFactor": 0.7,
   "baselineArmourId": "5c0e655586f774045612eeb2",
   "baselineArmourWeight": 10,
-  "enableDebug": true
+  "baselineArmourPrice": 200000,
+  "pricePerArmourClassStep": 100000,
+  "armourWeightMultiplierReductionFactor": 0.7,
+  "enableDebug": false,
+  "excludedCategories": ["5b5f78b786f77447ed5636af", "5b47574386f77428ca22b33c"]
 }
