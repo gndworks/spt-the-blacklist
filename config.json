@@ -5,18 +5,21 @@
   "blacklistedItemPriceMultiplier": 2,
   "blacklistedAmmoAdditionalPriceMultiplier": 1.8,
   "blacklistedArmourAdditionalPriceMultiplier": 1.8,
-  "customItemPriceMultipliers": [
+  "customItemConfigs": [
     {
+      "itemIdHint": "Just a human friendly description that isn't used in code to help you remember. This item is the .338 AP round",
       "itemId": "5fc382a9d724d907e2077dab",
       "priceMultiplier": 1.5
     },
     {
+      "itemIdHint": "MK-18 .338 rifle",
       "itemId": "5fc22d7c187fea44d52eda44",
       "priceMultiplier": 3
     },
     {
+      "itemIdHint": "AXMC .338 rifle. This gun has no flea price by default. We can use the price override to avoid any issues",
       "itemId": "627e14b21713922ded6f2c15",
-      "priceMultiplier": 10
+      "priceOverride": 150000
     }
   ]
 }

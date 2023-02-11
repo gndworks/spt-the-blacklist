@@ -46,30 +46,23 @@ class TheBlacklistMod implements IPostDBLoadMod {
   public postDBLoad(container: DependencyContainer): void {
     this.logger = container.resolve<ILogger>("WinstonLogger");
 
-    const databaseServer = container.resolve<DatabaseServer>("DatabaseServer");
-    const tables = databaseServer.getTables();
-
-    const configServer = container.resolve<ConfigServer>("ConfigServer");
-    const ragfairConfig = configServer.getConfig<IRagfairConfig>(ConfigTypes.RAGFAIR);
-    const ragfairServer = container.resolve<RagfairServer>("RagfairServer");
-    const ragfairPriceService = container.resolve<RagfairPriceService>("RagfairPriceService");
-    const ragfairOfferGenerator = container.resolve<RagfairOfferGenerator>("RagfairOfferGenerator");
-    const ragfairOfferService = container.resolve<RagfairOfferService>("RagfairOfferService");
-
     // Easiest way to make mod compatible with Lua's flea updater is let the user choose when to load the mod...
-    setTimeout(() => this.initialiseMod(tables, ragfairConfig, ragfairServer, ragfairPriceService, ragfairOfferGenerator, ragfairOfferService), config.startDelayInSeconds * 1000);
+    setTimeout(() => this.initialiseMod(container), config.startDelayInSeconds * 1000);
   }
 
   private initialiseMod(
-    tables: IDatabaseTables, 
-    ragfairConfig: IRagfairConfig, 
-    ragfairServer: RagfairServer,
-    ragfairPriceService: RagfairPriceService,
-    ragfairOfferGenerator: RagfairOfferGenerator,
-    ragfairOfferService: RagfairOfferService
+    container: DependencyContainer
   ): void {
+    const databaseServer = container.resolve<DatabaseServer>("DatabaseServer");
+    const tables = databaseServer.getTables();
+    const configServer = container.resolve<ConfigServer>("ConfigServer");
+    const ragfairConfig = configServer.getConfig<IRagfairConfig>(ConfigTypes.RAGFAIR);
+    const ragfairPriceService = container.resolve<RagfairPriceService>("RagfairPriceService");
+    const ragfairOfferGenerator = container.resolve<RagfairOfferGenerator>("RagfairOfferGenerator");
+
     const itemTable = tables.templates.items;
     const handbookItems = tables.templates.handbook.Items;
+    const prices = tables.templates.prices;
 
     ragfairConfig.dynamic.blacklist.enableBsgList = !config.disableBsgBlacklist;
 
@@ -78,25 +71,34 @@ class TheBlacklistMod implements IPostDBLoadMod {
 
     let blacklistedItemsCount = 0;
 
+    // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
+      const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
+
+      // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
+      if (customItemConfig?.priceOverride) {
+        prices[item._id] = customItemConfig.priceOverride;
+        return;
+      }
+
       const itemProps = item._props;
-      const prices = tables.templates.prices;
 
       if (!itemProps.CanSellOnRagfair) {
         if (!prices[item._id]) {
           this.logger.debug(`${this.modName} Could not find flea prices for ${item._id} - ${item._name}. Skipping item update.`);
           return;
         }
-        const itemSpecificPriceMultiplier = config.customItemPriceMultipliers.find(conf => conf.itemId === item._id)?.priceMultiplier || 1;
-        prices[item._id] *= config.blacklistedItemPriceMultiplier * itemSpecificPriceMultiplier;
+
         itemProps.CanSellOnRagfair = config.canSellBlacklistedItemsOnFlea;
 
-        this.updatePriceIfAmmo(item, prices);
-        this.updatePriceIfArmour(item, prices);
+        prices[item._id] = this.getUpdatedPrice(item, prices);
 
         blacklistedItemsCount++;
       }
+
+      const itemSpecificPriceMultiplier = customItemConfig?.priceMultiplier || 1;
+      prices[item._id] *= itemSpecificPriceMultiplier;
     });
 
     // Typescript hack to call protected method
@@ -106,39 +108,42 @@ class TheBlacklistMod implements IPostDBLoadMod {
     });
   }
 
-  private updatePriceIfAmmo(item: ITemplateItem, prices: Record<string, number>) {
-    if (item._props.ammoType === "bullet") {
-      // Note that this price can be affected by other mods like Lua's market updater and the global price multiplier already.
-      const currentFleaPrice = prices[item._id];
+  private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>) {
+    // Note that this price can be affected by other mods like Lua's market updater.
+    const currentFleaPrice = prices[item._id];
+    let newPrice: number;
 
-      prices[item._id] = this.getUpdatedAmmoPrice(item, currentFleaPrice);
+    if (item._props.ammoType === "bullet") {
+      newPrice = this.getUpdatedAmmoPrice(item, currentFleaPrice);
+    } else if (Number(item._props.armorClass) > 0) {
+      newPrice = this.getUpdatedArmourPrice(item, prices);
     }
+
+    return newPrice ? newPrice * config.blacklistedItemPriceMultiplier : currentFleaPrice;
   }
 
   private getUpdatedAmmoPrice(item: ITemplateItem, currentFleaPrice: number) {
     const baselinePen = this.baselineBullet._props.PenetrationPower;
+    const baselineDamage = this.baselineBullet._props.Damage;
 
-    return currentFleaPrice * config.blacklistedAmmoAdditionalPriceMultiplier * item._props.PenetrationPower / baselinePen;
+    const penetrationMultiplier = item._props.PenetrationPower / baselinePen;
+    const damageMultiplier = item._props.Damage / baselineDamage;
+
+    return currentFleaPrice * config.blacklistedAmmoAdditionalPriceMultiplier * penetrationMultiplier * damageMultiplier;
   }
 
-  private updatePriceIfArmour(item: ITemplateItem, prices: Record<string, number>) {
-    if (Number(item._props.armorClass) > 0) {
-
-      prices[item._id] = this.getUpdatedArmourPrice(item, prices);
-    }
-  }
-
-  // Armour price balancing is tricky. The default values for some armours like the Zabralo is too high imo.
+  // Armour price balancing is tricky. The default prices for some armours like the Zabralo is too high imo.
   // Updated prices are based on a Trooper armour (default) as well as the armour class and its weight.
   private getUpdatedArmourPrice(item: ITemplateItem, prices: Record<string, number>) {
     const baselineArmourRating = Number(this.baselineArmour._props.armorClass);
     const baselineArmourPrice = prices[this.baselineArmour._id];
-    const itemArmourRating = Number(item._props.armorClass);
-    const itemArmourRatingMultiplier = itemArmourRating / baselineArmourRating;
-    const itemArmourWeightMultiplier = advancedConfig.baselineArmourWeight / item._props.Weight;
-    const partialItemCost = prices[item._id] * (advancedConfig.percentageOfInitialArmourPriceToAdd / 100)
 
-    return baselineArmourPrice * config.blacklistedArmourAdditionalPriceMultiplier * itemArmourRatingMultiplier * itemArmourWeightMultiplier + partialItemCost;
+    const itemArmourRatingMultiplier = Number(item._props.armorClass) / baselineArmourRating;
+    const itemArmourWeightMultiplier = advancedConfig.baselineArmourWeight / item._props.Weight;
+    // Hard to balance this figure so will just leave it out.
+    // const partialItemCost = prices[item._id] * (advancedConfig.percentageOfInitialArmourPriceToAdd / 100)
+
+    return baselineArmourPrice * config.blacklistedArmourAdditionalPriceMultiplier * itemArmourRatingMultiplier * itemArmourWeightMultiplier;
   }
 }
 
