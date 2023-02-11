@@ -1,8 +1,7 @@
 {
   "startDelayInSeconds": 7,
   "disableBsgBlacklist": true,
-  "canSellBlacklistedItemsOnFlea": true,
-  "blacklistedItemPriceMultiplier": 2,
+  "blacklistedItemPriceMultiplier": 1,
   "blacklistedAmmoAdditionalPriceMultiplier": 1,
   "blacklistedArmourAdditionalPriceMultiplier": 1,
   "customItemConfigs": [

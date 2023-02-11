@@ -86,7 +86,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
 
       const itemProps = item._props;
       if (!itemProps.CanSellOnRagfair) {
-        itemProps.CanSellOnRagfair = config.canSellBlacklistedItemsOnFlea;
+        itemProps.CanSellOnRagfair = config.disableBsgBlacklist;
 
         prices[item._id] = this.getUpdatedPrice(item, prices);
 
@@ -111,7 +111,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     });
   }
 
-  private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>) {
+  private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
     // Note that this price can be affected by other mods like Lua's market updater.
     const currentFleaPrice = prices[item._id];
     let newPrice: number;
@@ -122,7 +122,9 @@ class TheBlacklistMod implements IPostDBLoadMod {
       newPrice = this.getUpdatedArmourPrice(item, prices);
     }
 
-    return newPrice ? newPrice * config.blacklistedItemPriceMultiplier : currentFleaPrice;
+    // Avoids NaN. Also we shouldn't have any prices of 0.
+    const price = newPrice || currentFleaPrice;
+    return price && price * config.blacklistedItemPriceMultiplier;
   }
 
   private getUpdatedAmmoPrice(item: ITemplateItem) {
