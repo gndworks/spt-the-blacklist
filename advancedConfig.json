@@ -4,5 +4,5 @@
   "bulletDamageMultiplierRedutionFactor": 0.7,
   "baselineArmourId": "5c0e655586f774045612eeb2",
   "baselineArmourWeight": 10,
-  "percentageOfInitialArmourPriceToAdd": 50
+  "enableDebug": true
 }

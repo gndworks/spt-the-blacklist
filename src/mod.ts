@@ -20,10 +20,8 @@ import { DependencyContainer } from "tsyringe";
 import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
 import { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod";
 import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
-import { RagfairServer } from "@spt-aki/servers/RagfairServer";
 import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
 import { RagfairOfferGenerator } from "@spt-aki/generators/RagfairOfferGenerator";
@@ -31,7 +29,6 @@ import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
-import { RagfairOfferService } from "@spt-aki/services/RagfairOfferService";
 
 class TheBlacklistMod implements IPostDBLoadMod {
   private logger: ILogger;
@@ -75,24 +72,30 @@ class TheBlacklistMod implements IPostDBLoadMod {
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
       const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
+      const originalPrice = prices[item._id];
 
       // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
       if (customItemConfig?.fleaPriceOverride) {
         prices[item._id] = customItemConfig.fleaPriceOverride;
+
+        this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
+
+        blacklistedItemsCount++;
         return;
       }
 
       const itemProps = item._props;
-
       if (!itemProps.CanSellOnRagfair) {
-        if (!prices[item._id]) {
-          this.logger.debug(`${this.modName} Could not find flea prices for ${item._id} - ${item._name}. Skipping item update.`);
-          return;
-        }
-
         itemProps.CanSellOnRagfair = config.canSellBlacklistedItemsOnFlea;
 
         prices[item._id] = this.getUpdatedPrice(item, prices);
+
+        if (!prices[item._id]) {
+          this.debug(`There are no flea prices for ${item._id} - ${item._name}!`);
+          return;
+        }
+
+        this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
         blacklistedItemsCount++;
       }
@@ -115,7 +118,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
 
     if (item._props.ammoType === "bullet") {
       newPrice = this.getUpdatedAmmoPrice(item);
-    } else if (Number(item._props.armorClass) > 0) {
+    } else if (Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")) {
       newPrice = this.getUpdatedArmourPrice(item, prices);
     }
 
@@ -148,7 +151,13 @@ class TheBlacklistMod implements IPostDBLoadMod {
     // Hard to balance this figure so will just leave it out.
     // const partialItemCost = prices[item._id] * (advancedConfig.percentageOfInitialArmourPriceToAdd / 100)
 
-    return baselineArmourPrice * config.blacklistedArmourAdditionalPriceMultiplier * itemArmourRatingMultiplier * itemArmourWeightMultiplier;
+    return baselineArmourPrice * itemArmourRatingMultiplier * itemArmourWeightMultiplier * config.blacklistedArmourAdditionalPriceMultiplier;
+  }
+
+  private debug(message: string) {
+    if (advancedConfig.enableDebug) {
+      this.logger.debug(`${this.modName}: ${message}`);
+    }
   }
 }
 
