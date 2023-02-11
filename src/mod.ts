@@ -77,8 +77,8 @@ class TheBlacklistMod implements IPostDBLoadMod {
       const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
 
       // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
-      if (customItemConfig?.priceOverride) {
-        prices[item._id] = customItemConfig.priceOverride;
+      if (customItemConfig?.fleaPriceOverride) {
+        prices[item._id] = customItemConfig.fleaPriceOverride;
         return;
       }
 
@@ -114,7 +114,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     let newPrice: number;
 
     if (item._props.ammoType === "bullet") {
-      newPrice = this.getUpdatedAmmoPrice(item, currentFleaPrice);
+      newPrice = this.getUpdatedAmmoPrice(item);
     } else if (Number(item._props.armorClass) > 0) {
       newPrice = this.getUpdatedArmourPrice(item, prices);
     }
@@ -122,14 +122,19 @@ class TheBlacklistMod implements IPostDBLoadMod {
     return newPrice ? newPrice * config.blacklistedItemPriceMultiplier : currentFleaPrice;
   }
 
-  private getUpdatedAmmoPrice(item: ITemplateItem, currentFleaPrice: number) {
+  private getUpdatedAmmoPrice(item: ITemplateItem) {
     const baselinePen = this.baselineBullet._props.PenetrationPower;
     const baselineDamage = this.baselineBullet._props.Damage;
 
     const penetrationMultiplier = item._props.PenetrationPower / baselinePen;
-    const damageMultiplier = item._props.Damage / baselineDamage;
+    const baseDamageMultiplier = item._props.Damage / baselineDamage;
 
-    return currentFleaPrice * config.blacklistedAmmoAdditionalPriceMultiplier * penetrationMultiplier * damageMultiplier;
+    // Reduces the effect of the damage multiplier so high DMG rounds aren't super expensive.
+    // Eg. let baseDamageMultiplier = 2 & bulletDamageMultiplierRedutionFactor = 0.7. Instead of a 2x price when a bullet is 2x damage, we instead get:
+    // 2 + (1 - 2) * 0.7 = 2 - 0.7 = 1.3x the price.
+    const damageMultiplier = baseDamageMultiplier + (1 - baseDamageMultiplier) * advancedConfig.bulletDamageMultiplierRedutionFactor; 
+
+    return advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * config.blacklistedAmmoAdditionalPriceMultiplier;
   }
 
   // Armour price balancing is tricky. The default prices for some armours like the Zabralo is too high imo.
