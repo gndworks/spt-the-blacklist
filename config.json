@@ -1,5 +1,4 @@
 {
-  "startDelayInSeconds": 7,
   "disableBsgBlacklist": true,
   "blacklistedItemPriceMultiplier": 1,
   "blacklistedAmmoAdditionalPriceMultiplier": 1,
@@ -24,6 +23,11 @@
       "itemIdHint": "RSASS 7.62 rifle. 300k+ default seems too high for me",
       "itemId": "5a367e5dc4a282000e49738f",
       "fleaPriceOverride": 150000
+    },
+    {
+      "itemIdHint": "M32 40mm MGL",
+      "itemId": "6275303a9f372d6ea97f9ec7",
+      "fleaPriceOverride": 200000
     },
     {
       "itemIdHint": "Thicc Items Case",

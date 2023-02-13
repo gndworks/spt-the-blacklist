@@ -44,7 +44,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     this.logger = container.resolve<ILogger>("WinstonLogger");
 
     // Easiest way to make mod compatible with Lua's flea updater is let the user choose when to load the mod...
-    setTimeout(() => this.initialiseMod(container), config.startDelayInSeconds * 1000);
+    setTimeout(() => this.initialiseMod(container), (advancedConfig.startDelayInSeconds || 7) * 1000);
   }
 
   private initialiseMod(
