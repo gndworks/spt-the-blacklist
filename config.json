@@ -33,6 +33,16 @@
       "itemIdHint": "Thicc Items Case",
       "itemId": "5c0a840b86f7742ffa4f2482",
       "fleaPriceOverride": 12000000
+    },
+    {
+      "itemIdHint": "M203 40mm UGL",
+      "itemId": "6357c98711fb55120211f7e1",
+      "fleaPriceOverride": 200000
+    },
+    {
+      "itemIdHint": "GP-25 40mm UGL",
+      "itemId": "62e7e7bbe6da9612f743f1e0",
+      "fleaPriceOverride": 150000
     }
   ]
 }
