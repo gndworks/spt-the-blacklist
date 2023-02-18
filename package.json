@@ -1,10 +1,10 @@
 {
     "name": "TheBlacklist",
-    "version": "1.0.2",
+    "version": "1.1.0",
     "main": "src/mod.js",
-    "license": "MIT",
+    "license": "GPLv3",
     "author": "Platinum",
-    "akiVersion": "3.5.0",
+    "akiVersion": "3.5.*",
     "scripts": {
         "setup": "npm i",
         "build": "node ./packageBuild.ts"
