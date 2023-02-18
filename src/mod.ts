@@ -26,6 +26,7 @@ import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
 import { RagfairOfferGenerator } from "@spt-aki/generators/RagfairOfferGenerator";
 import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
+import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
@@ -39,6 +40,8 @@ class TheBlacklistMod implements IPostDBLoadMod {
   private baselineBullet: ITemplateItem;
   private baselineArmour: ITemplateItem;
 
+  // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
+  private attachmentCategoryIds: string[] = [];
 
   public postDBLoad(container: DependencyContainer): void {
     this.logger = container.resolve<ILogger>("WinstonLogger");
@@ -67,6 +70,11 @@ class TheBlacklistMod implements IPostDBLoadMod {
     this.baselineArmour = itemTable[advancedConfig.baselineArmourId];
 
     let blacklistedItemsCount = 0;
+    let attachmentPriceLimitedCount = 0;
+
+    if (config.limitMaxPriceOfAttachments) {
+      this.initialiseAttachmentCategoryIds(tables.templates.handbook.Categories);
+    }
 
     // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
@@ -80,6 +88,18 @@ class TheBlacklistMod implements IPostDBLoadMod {
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
         blacklistedItemsCount++;
         return;
+      }
+
+      if (config.limitMaxPriceOfAttachments && this.attachmentCategoryIds.includes(handbookItem.ParentId)) {
+        const handbookPrice = handbookItem.Price;
+        const existingFleaPrice = prices[item._id];
+        const maxFleaPrice = handbookPrice * config.maxFleaPriceOfAttachmentsToHandbookPrice;
+        
+        if (existingFleaPrice > maxFleaPrice) {
+          prices[item._id] = maxFleaPrice;
+          attachmentPriceLimitedCount++;
+          this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
+        }
       }
 
       const itemProps = item._props;
@@ -113,7 +133,27 @@ class TheBlacklistMod implements IPostDBLoadMod {
     (ragfairPriceService as any).generateDynamicPrices();
     ragfairOfferGenerator.generateDynamicOffers().then(() => {
       this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsCount} blacklisted items to update.`);
+      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`)
     });
+  }
+
+  private initialiseAttachmentCategoryIds(handbookCategories: Category[]) {
+    const weaponPartsAndModsId = "5b5f71a686f77447ed5636ab";
+    const weaponPartsChildrenCategories = this.getChildCategoriesRecursively(handbookCategories, weaponPartsAndModsId);
+    const childrenIds = weaponPartsChildrenCategories.map(category => category.Id);
+
+    this.attachmentCategoryIds.push(weaponPartsAndModsId);
+    this.attachmentCategoryIds = this.attachmentCategoryIds.concat(childrenIds);
+  }
+
+  private getChildCategoriesRecursively(handbookCategories: Category[], parentId: string): Category[] {
+    const childCategories = handbookCategories.filter(category => category.ParentId === parentId);
+    const grandChildrenCategories = childCategories.reduce(
+      (memo, category) => memo.concat(this.getChildCategoriesRecursively(handbookCategories, category.Id)), 
+      []
+    );
+  
+    return childCategories.concat(grandChildrenCategories);
   }
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
