@@ -37,6 +37,16 @@
       "fleaPriceOverride": 12000000
     },
     {
+      "itemIdHint": "Thicc Weapons Case",
+      "itemId": "5b6d9ce188a4501afc1b2b25",
+      "fleaPriceOverride": 4000000
+    },
+    {
+      "itemIdHint": "Regular Weapon Case",
+      "itemId": "59fb023c86f7746d0d4b423c",
+      "fleaPriceOverride": 1500000
+    },
+    {
       "itemIdHint": "M203 40mm UGL",
       "itemId": "6357c98711fb55120211f7e1",
       "fleaPriceOverride": 200000
