@@ -161,15 +161,24 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const currentFleaPrice = prices[item._id];
     let newPrice: number;
 
-    if (item._props.ammoType === "bullet") {
+    if (this.isAmmo(item)) {
       newPrice = this.getUpdatedAmmoPrice(item);
-    } else if (Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")) {
+    } else if (this.isArmour(item)) {
       newPrice = this.getUpdatedArmourPrice(item);
     }
 
     // Avoids NaN. Also we shouldn't have any prices of 0.
     const price = newPrice || currentFleaPrice;
     return price && price * config.blacklistedItemPriceMultiplier;
+  }
+
+  private isAmmo(item: ITemplateItem): boolean {
+    const ammoRoundsHandbookId = "5485a8684bdc2da71d8b4567";
+    return item._parent === ammoRoundsHandbookId;
+  }
+
+  private isArmour(item: ITemplateItem): boolean {
+    return Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")
   }
 
   private getUpdatedAmmoPrice(item: ITemplateItem) {
