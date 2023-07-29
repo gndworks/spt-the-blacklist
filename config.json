@@ -55,6 +55,16 @@
       "itemIdHint": "GP-25 40mm UGL",
       "itemId": "62e7e7bbe6da9612f743f1e0",
       "fleaPriceOverride": 150000
+    },
+    {
+      "itemIdHint": "Dogtag BEAR",
+      "itemId": "59f32bb586f774757e1e8442",
+      "blacklisted": true
+    },
+    {
+      "itemIdHint": "Dogtag USEC",
+      "itemId": "59f32c3b86f77472a31742f0",
+      "blacklisted": true
     }
   ]
 }

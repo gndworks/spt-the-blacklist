@@ -90,6 +90,12 @@ class TheBlacklistMod implements IPostDBLoadMod {
         return;
       }
 
+      if (customItemConfig?.blacklisted) {
+        this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
+        ragfairConfig.dynamic.blacklist.custom.push(item._id);
+        return;
+      }
+
       if (config.limitMaxPriceOfAttachments && this.attachmentCategoryIds.includes(handbookItem.ParentId)) {
         const handbookPrice = handbookItem.Price;
         const existingFleaPrice = prices[item._id];
