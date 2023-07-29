@@ -165,6 +165,8 @@ class TheBlacklistMod implements IPostDBLoadMod {
       newPrice = this.getUpdatedAmmoPrice(item);
     } else if (this.isArmour(item)) {
       newPrice = this.getUpdatedArmourPrice(item);
+    } else if (this.isGun(item) && currentFleaPrice == null) {
+      newPrice = this.getFallbackGunPrice();
     }
 
     // Avoids NaN. Also we shouldn't have any prices of 0.
@@ -173,12 +175,24 @@ class TheBlacklistMod implements IPostDBLoadMod {
   }
 
   private isAmmo(item: ITemplateItem): boolean {
-    const ammoRoundsHandbookId = "5485a8684bdc2da71d8b4567";
-    return item._parent === ammoRoundsHandbookId;
+    const roundsItemCategoryId = "5485a8684bdc2da71d8b4567";
+    return item._parent === roundsItemCategoryId;
   }
 
   private isArmour(item: ITemplateItem): boolean {
     return Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")
+  }
+
+  // Some blacklisted guns are very cheap because they don't have a flea price, just a handbook price. The ones listed below will get a much higher default price.
+  private isGun(item: ITemplateItem): boolean {
+    const marksmanRiflesItemCategoryId = "5447b6194bdc2d67278b4567";
+    const assaultRiflesItemCategoryId = "5447b5f14bdc2d61278b4567";
+    const sniperRiflesItemCategoryId = "5447b6254bdc2dc3278b4568";
+    const smgsItemCategoryId = "5447b5e04bdc2d62278b4567";
+    const carbinesItemCategoryId = "5447b5fc4bdc2d87278b4567";
+    const gunCategories = [marksmanRiflesItemCategoryId, assaultRiflesItemCategoryId, sniperRiflesItemCategoryId, smgsItemCategoryId, carbinesItemCategoryId];
+
+    return gunCategories.includes(item._parent);
   }
 
   private getUpdatedAmmoPrice(item: ITemplateItem) {
@@ -210,6 +224,10 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const armourWeightMultiplier = baseArmourWeightMultiplier + (1 - baseArmourWeightMultiplier) * advancedConfig.armourWeightMultiplierReductionFactor;
 
     return (advancedConfig.baselineArmourPrice + armourClassCost) * armourWeightMultiplier * config.blacklistedArmourAdditionalPriceMultiplier;
+  }
+
+  private getFallbackGunPrice() {
+    return advancedConfig.gunPriceFallback;
   }
 
   private debug(message: string) {
