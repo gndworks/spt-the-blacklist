@@ -233,7 +233,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
   }
 
   private getFallbackGunPrice() {
-    return advancedConfig.gunPriceFallback;
+    return advancedConfig.gunPriceFallback || 100000;
   }
 
   private debug(message: string) {
