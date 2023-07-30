@@ -205,8 +205,16 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const baselinePen = this.baselineBullet._props.PenetrationPower;
     const baselineDamage = this.baselineBullet._props.Damage;
 
-    const penetrationMultiplier = item._props.PenetrationPower / baselinePen;
+    const basePenetrationMultiplier = item._props.PenetrationPower / baselinePen;
     const baseDamageMultiplier = item._props.Damage / baselineDamage;
+
+    // A good linear graph that increases enough for higher pen ammo but keeps lower pen ammo around baseline price.
+    let penetrationMultiplier = 7 * basePenetrationMultiplier - 6;
+
+    // Due to the maths above, its actually possible to go to the negatives (but I don't think any ammo blacklisted would, but just to be safe)
+    if (penetrationMultiplier < 0.2) {
+      penetrationMultiplier = 0.2;
+    }
 
     // Reduces the effect of the damage multiplier so high DMG rounds aren't super expensive.
     // Eg. let baseDamageMultiplier = 2 & bulletDamageMultiplierRedutionFactor = 0.7. Instead of a 2x price when a bullet is 2x damage, we instead get:
