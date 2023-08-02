@@ -65,6 +65,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const prices = tables.templates.prices;
 
     ragfairConfig.dynamic.blacklist.enableBsgList = !config.disableBsgBlacklist;
+    ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = advancedConfig.useTraderPriceForOffersIfHigher != null ? advancedConfig.useTraderPriceForOffersIfHigher : true;
 
     this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
     this.baselineArmour = itemTable[advancedConfig.baselineArmourId];
