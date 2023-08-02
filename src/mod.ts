@@ -69,7 +69,9 @@ class TheBlacklistMod implements IPostDBLoadMod {
     this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
     this.baselineArmour = itemTable[advancedConfig.baselineArmourId];
 
-    let blacklistedItemsCount = 0;
+    let blacklistedItemsUpdatedCount = 0;
+    let nonBlacklistedItemsUpdatedCount = 0;
+    let ammoPricesUpdatedCount = 0;
     let attachmentPriceLimitedCount = 0;
 
     if (config.limitMaxPriceOfAttachments) {
@@ -86,7 +88,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
       if (customItemConfig?.fleaPriceOverride) {
         prices[item._id] = customItemConfig.fleaPriceOverride;
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
-        blacklistedItemsCount++;
+        blacklistedItemsUpdatedCount++;
         return;
       }
 
@@ -109,6 +111,21 @@ class TheBlacklistMod implements IPostDBLoadMod {
       }
 
       const itemProps = item._props;
+
+      if (config.useBalancedPricingForAllAmmo && this.isBulletOrShotgunShell(item)) {
+        const newPrice = this.getUpdatedAmmoPrice(item);
+        prices[item._id] = newPrice;
+        
+        if (!itemProps.CanSellOnRagfair) {
+          blacklistedItemsUpdatedCount++;
+          // Set to true so we avoid recalculating ammo price again for blacklisted ammo below.
+          itemProps.CanSellOnRagfair = true;
+        } else {
+          nonBlacklistedItemsUpdatedCount++;
+        }
+        ammoPricesUpdatedCount++;
+      }
+
       if (!itemProps.CanSellOnRagfair) {
         // Some blacklisted items are hard to balance or just shouldn't be allowed so we will keep them blacklisted.
         if (advancedConfig.excludedCategories.some(category => category === handbookItem.ParentId)) {
@@ -128,7 +145,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
 
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
-        blacklistedItemsCount++;
+        blacklistedItemsUpdatedCount++;
       }
 
       const itemSpecificPriceMultiplier = customItemConfig?.priceMultiplier || 1;
@@ -138,8 +155,13 @@ class TheBlacklistMod implements IPostDBLoadMod {
     // Typescript hack to call protected method
     (ragfairPriceService as any).generateDynamicPrices();
     ragfairOfferGenerator.generateDynamicOffers().then(() => {
-      this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsCount} blacklisted items to update.`);
-      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`)
+      this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
+      if (config.limitMaxPriceOfAttachments) {
+        this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
+      }
+      if (config.useBalancedPricingForAllAmmo) {
+        this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
+      }
     });
   }
 
@@ -167,7 +189,7 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const currentFleaPrice = prices[item._id];
     let newPrice: number;
 
-    if (this.isAmmo(item)) {
+    if (this.isBulletOrShotgunShell(item)) {
       newPrice = this.getUpdatedAmmoPrice(item);
     } else if (this.isArmour(item)) {
       newPrice = this.getUpdatedArmourPrice(item);
@@ -180,9 +202,9 @@ class TheBlacklistMod implements IPostDBLoadMod {
     return price && price * config.blacklistedItemPriceMultiplier;
   }
 
-  private isAmmo(item: ITemplateItem): boolean {
-    const roundsItemCategoryId = "5485a8684bdc2da71d8b4567";
-    return item._parent === roundsItemCategoryId;
+  private isBulletOrShotgunShell(item: ITemplateItem): boolean {
+    const props = item._props;
+    return props.ammoType === "bullet" || props.ammoType === "buckshot";
   }
 
   private isArmour(item: ITemplateItem): boolean {
@@ -208,12 +230,14 @@ class TheBlacklistMod implements IPostDBLoadMod {
     const basePenetrationMultiplier = item._props.PenetrationPower / baselinePen;
     const baseDamageMultiplier = item._props.Damage / baselineDamage;
 
-    // A good linear graph that increases enough for higher pen ammo but keeps lower pen ammo around baseline price.
-    let penetrationMultiplier = 7 * basePenetrationMultiplier - 6;
-
-    // Due to the maths above, its actually possible to go to the negatives (but I don't think any ammo blacklisted would, but just to be safe)
-    if (penetrationMultiplier < 0.2) {
-      penetrationMultiplier = 0.2;
+    let penetrationMultiplier: number;
+    if (basePenetrationMultiplier > 1) {
+      // A good gradient to make higher power rounds more expensive
+      penetrationMultiplier = 7 * basePenetrationMultiplier - 6;
+    } else {
+      // Due to maths above, its really easy to go < 1. The baseline ammo is mid tier with a reasonable 1000 rouble each. Ammo weaker than this tend to be pretty crap so we'll make it much cheaper
+      const newMultiplier = basePenetrationMultiplier * 0.7;
+      penetrationMultiplier = newMultiplier < 0.1 ? 0.1 : newMultiplier;
     }
 
     // Reduces the effect of the damage multiplier so high DMG rounds aren't super expensive.

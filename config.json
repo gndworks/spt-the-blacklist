@@ -1,6 +1,7 @@
 {
   "disableBsgBlacklist": true,
   "limitMaxPriceOfAttachments": true,
+  "useBalancedPricingForAllAmmo": false,
   "maxFleaPriceOfAttachmentsToHandbookPrice": 5,
   "blacklistedItemPriceMultiplier": 1,
   "blacklistedAmmoAdditionalPriceMultiplier": 1,
