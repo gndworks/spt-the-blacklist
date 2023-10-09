@@ -32,6 +32,8 @@ export interface IQuest {
     changeQuestMessageText: string;
     /** "Pmc" or "Scav" */
     side: string;
+    /** Status of quest to player */
+    sptStatus?: QuestStatus;
 }
 export interface Conditions {
     Started: AvailableForConditions[];
@@ -69,6 +71,7 @@ export interface AvailableForProps {
     zoneId?: string;
     type?: boolean;
     countInRaid?: boolean;
+    globalQuestCounterId?: any;
 }
 export interface AvailableForCounter {
     id: string;
