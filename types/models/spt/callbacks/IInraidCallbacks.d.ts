@@ -1,8 +1,8 @@
-import { IEmptyRequestData } from "@spt-aki/models/eft/common/IEmptyRequestData";
-import { INullResponseData } from "@spt-aki/models/eft/httpResponse/INullResponseData";
-import { IRegisterPlayerRequestData } from "@spt-aki/models/eft/inRaid/IRegisterPlayerRequestData";
-import { ISaveProgressRequestData } from "@spt-aki/models/eft/inRaid/ISaveProgressRequestData";
-import { IAkiProfile } from "@spt-aki/models/eft/profile/IAkiProfile";
+import { INullResponseData } from "../../eft/httpResponse/INullResponseData";
+import { IAkiProfile } from "../../eft/profile/IAkiProfile";
+import { IEmptyRequestData } from "../../eft/common/IEmptyRequestData";
+import { IRegisterPlayerRequestData } from "../../eft/inRaid/IRegisterPlayerRequestData";
+import { ISaveProgressRequestData } from "../../eft/inRaid/ISaveProgressRequestData";
 export interface IInraidCallbacks {
     onLoad(sessionID: string): IAkiProfile;
     registerPlayer(url: string, info: IRegisterPlayerRequestData, sessionID: string): INullResponseData;

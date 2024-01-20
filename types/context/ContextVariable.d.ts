@@ -1,4 +1,4 @@
-import { ContextVariableType } from "@spt-aki/context/ContextVariableType";
+import { ContextVariableType } from "./ContextVariableType";
 export declare class ContextVariable {
     private value;
     private timestamp;

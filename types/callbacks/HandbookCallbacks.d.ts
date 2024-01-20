@@ -1,5 +1,5 @@
-import { HandbookController } from "@spt-aki/controllers/HandbookController";
-import { OnLoad } from "@spt-aki/di/OnLoad";
+import { HandbookController } from "../controllers/HandbookController";
+import { OnLoad } from "../di/OnLoad";
 export declare class HandbookCallbacks implements OnLoad {
     protected handbookController: HandbookController;
     constructor(handbookController: HandbookController);

@@ -1,4 +1,3 @@
-import { Ixyz } from "@spt-aki/models/eft/common/Ixyz";
 export interface ITemplateItem {
     _id: string;
     _name: string;
@@ -8,11 +7,6 @@ export interface ITemplateItem {
     _proto: string;
 }
 export interface Props {
-    AllowSpawnOnLocations?: any[];
-    BeltMagazineRefreshCount?: number;
-    ChangePriceCoef?: number;
-    FixedPrice?: boolean;
-    SendToClient?: boolean;
     Name?: string;
     ShortName?: string;
     Description?: string;
@@ -38,7 +32,6 @@ export interface Props {
     IsUnremovable?: boolean;
     IsLockedafterEquip?: boolean;
     IsSpecialSlotOnly?: boolean;
-    IsStationaryWeapon?: boolean;
     QuestItem?: boolean;
     QuestStashMaxCount?: number;
     LootExperience?: number;
@@ -84,7 +77,6 @@ export interface Props {
     Velocity?: number;
     RaidModdable?: boolean;
     ToolModdable?: boolean;
-    UniqueAnimationModID?: number;
     BlocksFolding?: boolean;
     BlocksCollapsible?: boolean;
     IsAnimated?: boolean;
@@ -108,12 +100,10 @@ export interface Props {
     Intensity?: number;
     Mask?: string;
     MaskSize?: number;
-    IsMagazineForStationaryWeapon?: boolean;
     NoiseIntensity?: number;
     NoiseScale?: number;
-    Color?: IColor;
+    Color?: Color;
     DiffuseIntensity?: number;
-    MagazineWithBelt?: boolean;
     HasHinge?: boolean;
     RampPalette?: string;
     DepthFade?: number;
@@ -206,17 +196,16 @@ export interface Props {
     CameraSnap?: number;
     ReloadMode?: string;
     AimPlane?: number;
-    TacticalReloadStiffnes?: Ixyz;
+    TacticalReloadStiffnes?: Xyz;
     TacticalReloadFixation?: number;
-    RecoilCenter?: Ixyz;
-    RotationCenter?: Ixyz;
-    RotationCenterNoStock?: Ixyz;
+    RecoilCenter?: Xyz;
+    RotationCenter?: Xyz;
+    RotationCenterNoStock?: Xyz;
     FoldedSlot?: string;
     CompactHandling?: boolean;
     MinRepairDegradation?: number;
     MaxRepairDegradation?: number;
     IronSightRange?: number;
-    IsBeltMachineGun?: boolean;
     IsFlareGun?: boolean;
     IsGrenadeLauncher?: boolean;
     IsOneoff?: boolean;
@@ -253,7 +242,7 @@ export interface Props {
     FaceShieldComponent?: boolean;
     FaceShieldMask?: string;
     MaterialType?: string;
-    RicochetParams?: Ixyz;
+    RicochetParams?: Xyz;
     DeafStrength?: string;
     BlindnessProtection?: number;
     Distortion?: number;
@@ -263,17 +252,14 @@ export interface Props {
     CompressorGain?: number;
     CutoffFreq?: number;
     Resonance?: number;
-    RolloffMultiplier?: number;
-    ReverbVolume?: number;
     CompressorVolume?: number;
     AmbientVolume?: number;
     DryVolume?: number;
-    HighFrequenciesGain?: number;
     foodUseTime?: number;
     foodEffectType?: string;
     StimulatorBuffs?: string;
     effects_health?: IHealthEffect[] | Record<string, Record<string, number>>;
-    effects_damage?: Record<string, IEffectDamageProps>;
+    effects_damage?: any;
     MaximumNumberOfUsage?: number;
     knifeHitDelay?: number;
     knifeHitSlashRate?: number;
@@ -289,12 +275,12 @@ export interface Props {
     PrimaryConsumption?: number;
     SecondryConsumption?: number;
     DeflectionConsumption?: number;
-    AppliedTrunkRotation?: Ixyz;
-    AppliedHeadRotation?: Ixyz;
+    AppliedTrunkRotation?: Xyz;
+    AppliedHeadRotation?: Xyz;
     DisplayOnModel?: boolean;
     AdditionalAnimationLayer?: number;
     StaminaBurnRate?: number;
-    ColliderScaleMultiplier?: Ixyz;
+    ColliderScaleMultiplier?: Xyz;
     ConfigPathStr?: string;
     MaxMarkersCount?: number;
     scaleMin?: number;
@@ -359,9 +345,9 @@ export interface Props {
     ShowHitEffectOnExplode?: boolean;
     ExplosionType?: string;
     AmmoLifeTimeSec?: number;
-    Contusion?: Ixyz;
-    ArmorDistanceDistanceDamage?: Ixyz;
-    Blindness?: Ixyz;
+    Contusion?: Xyz;
+    ArmorDistanceDistanceDamage?: Xyz;
+    Blindness?: Xyz;
     IsLightAndSoundShot?: boolean;
     LightAndSoundShotAngle?: number;
     LightAndSoundShotSelfContusionTime?: number;
@@ -385,7 +371,6 @@ export interface Props {
     ExplosionEffectType?: string;
     LinkedWeapon?: string;
     UseAmmoWithoutShell?: boolean;
-    RandomLootSettings?: IRandomLootSettings;
 }
 export interface IHealthEffect {
     type: string;
@@ -421,8 +406,8 @@ export interface Slot {
     _parent: string;
     _props: SlotProps;
     _max_count?: number;
-    _required?: boolean;
-    _mergeSlotWithChildren?: boolean;
+    _required: boolean;
+    _mergeSlotWithChildren: boolean;
     _proto: string;
 }
 export interface SlotProps {
@@ -432,6 +417,11 @@ export interface SlotFilter {
     Shift?: number;
     Filter: string[];
     AnimationIndex?: number;
+}
+export interface Xyz {
+    x: number;
+    y: number;
+    z: number;
 }
 export interface StackSlot {
     _name?: string;
@@ -445,21 +435,6 @@ export interface StackSlot {
 export interface StackSlotProps {
     filters: SlotFilter[];
 }
-export interface IRandomLootSettings {
-    allowToSpawnIdenticalItems: boolean;
-    allowToSpawnQuestItems: boolean;
-    countByRarity: any[];
-    excluded: IRandomLootExcluded;
-    filters: any[];
-    findInRaid: boolean;
-    maxCount: number;
-    minCount: number;
-}
-export interface IRandomLootExcluded {
-    categoryTemplates: any[];
-    rarity: string[];
-    templates: any[];
-}
 export interface EffectsHealth {
     Energy: EffectsHealthProps;
     Hydration: EffectsHealthProps;
@@ -468,15 +443,15 @@ export interface EffectsHealthProps {
     value: number;
 }
 export interface EffectsDamage {
-    Pain: IEffectDamageProps;
-    LightBleeding: IEffectDamageProps;
-    HeavyBleeding: IEffectDamageProps;
-    Contusion: IEffectDamageProps;
-    RadExposure: IEffectDamageProps;
-    Fracture: IEffectDamageProps;
-    DestroyedPart: IEffectDamageProps;
+    Pain: EffectDamageProps;
+    LightBleeding: EffectDamageProps;
+    HeavyBleeding: EffectDamageProps;
+    Contusion: EffectDamageProps;
+    RadExposure: EffectDamageProps;
+    Fracture: EffectDamageProps;
+    DestroyedPart: EffectDamageProps;
 }
-export interface IEffectDamageProps {
+export interface EffectDamageProps {
     delay: number;
     duration: number;
     fadeOut: number;
@@ -484,7 +459,7 @@ export interface IEffectDamageProps {
     healthPenaltyMin?: number;
     healthPenaltyMax?: number;
 }
-export interface IColor {
+export interface Color {
     r: number;
     g: number;
     b: number;

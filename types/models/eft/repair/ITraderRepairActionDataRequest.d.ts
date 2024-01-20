@@ -1,4 +1,4 @@
-import { IBaseRepairActionDataRequest } from "@spt-aki/models/eft/repair/IBaseRepairActionDataRequest";
+import { IBaseRepairActionDataRequest } from "./IBaseRepairActionDataRequest";
 export interface ITraderRepairActionDataRequest extends IBaseRepairActionDataRequest {
     Action: "TraderRepair";
     tid: string;

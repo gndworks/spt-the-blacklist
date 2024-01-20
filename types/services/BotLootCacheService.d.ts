@@ -1,25 +1,23 @@
-import { PMCLootGenerator } from "@spt-aki/generators/PMCLootGenerator";
-import { ItemHelper } from "@spt-aki/helpers/ItemHelper";
-import { IBotType } from "@spt-aki/models/eft/common/tables/IBotType";
-import { ITemplateItem, Props } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { IBotLootCache, LootCacheType } from "@spt-aki/models/spt/bots/IBotLootCache";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { LocalisationService } from "@spt-aki/services/LocalisationService";
-import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
-import { JsonUtil } from "@spt-aki/utils/JsonUtil";
+import { PMCLootGenerator } from "../generators/PMCLootGenerator";
+import { Items } from "../models/eft/common/tables/IBotType";
+import { ITemplateItem, Props } from "../models/eft/common/tables/ITemplateItem";
+import { BotLootCache, LootCacheType } from "../models/spt/bots/BotLootCache";
+import { ILogger } from "../models/spt/utils/ILogger";
+import { DatabaseServer } from "../servers/DatabaseServer";
+import { JsonUtil } from "../utils/JsonUtil";
+import { LocalisationService } from "./LocalisationService";
+import { RagfairPriceService } from "./RagfairPriceService";
 export declare class BotLootCacheService {
     protected logger: ILogger;
     protected jsonUtil: JsonUtil;
-    protected itemHelper: ItemHelper;
     protected databaseServer: DatabaseServer;
     protected pmcLootGenerator: PMCLootGenerator;
     protected localisationService: LocalisationService;
     protected ragfairPriceService: RagfairPriceService;
-    protected lootCache: Record<string, IBotLootCache>;
-    constructor(logger: ILogger, jsonUtil: JsonUtil, itemHelper: ItemHelper, databaseServer: DatabaseServer, pmcLootGenerator: PMCLootGenerator, localisationService: LocalisationService, ragfairPriceService: RagfairPriceService);
+    protected lootCache: Record<string, BotLootCache>;
+    constructor(logger: ILogger, jsonUtil: JsonUtil, databaseServer: DatabaseServer, pmcLootGenerator: PMCLootGenerator, localisationService: LocalisationService, ragfairPriceService: RagfairPriceService);
     /**
-     * Remove cached bot loot data
+     * Remove all cached bot loot data
      */
     clearCache(): void;
     /**
@@ -27,17 +25,17 @@ export declare class BotLootCacheService {
      * @param botRole bot to get loot for
      * @param isPmc is the bot a pmc
      * @param lootType what type of loot is needed (backpack/pocket/stim/vest etc)
-     * @param botJsonTemplate Base json db file for the bot having its loot generated
+     * @param lootPool the full pool of loot (needed when cache is empty)
      * @returns ITemplateItem array
      */
-    getLootFromCache(botRole: string, isPmc: boolean, lootType: LootCacheType, botJsonTemplate: IBotType): ITemplateItem[];
+    getLootFromCache(botRole: string, isPmc: boolean, lootType: LootCacheType, lootPool: Items): ITemplateItem[];
     /**
      * Generate loot for a bot and store inside a private class property
      * @param botRole bots role (assault / pmcBot etc)
+     * @param lootPool the full pool of loot we use to create the various sub-categories with
      * @param isPmc Is the bot a PMC (alteres what loot is cached)
-     * @param botJsonTemplate db template for bot having its loot generated
      */
-    protected addLootToCache(botRole: string, isPmc: boolean, botJsonTemplate: IBotType): void;
+    protected addLootToCache(botRole: string, isPmc: boolean, lootPool: Items): void;
     /**
      * Sort a pool of item objects by its flea price
      * @param poolToSort pool of items to sort

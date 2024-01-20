@@ -1,4 +1,5 @@
-import { MinMax } from "@spt-aki/models/common/MinMax";
-export interface IGetItemPriceResult extends MinMax {
+export interface IGetItemPriceResult {
     avg: number;
+    min: number;
+    max: number;
 }

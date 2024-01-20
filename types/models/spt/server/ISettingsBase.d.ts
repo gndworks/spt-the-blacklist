@@ -27,7 +27,6 @@ export interface Config {
     TurnOffLogging: boolean;
     WeaponOverlapDistanceCulling: number;
     WebDiagnosticsEnabled: boolean;
-    NetworkStateView: INetworkStateView;
 }
 export interface FramerateLimit {
     MaxFramerateGameLimit: number;
@@ -46,8 +45,4 @@ export interface ReleaseProfiler {
     Enabled: boolean;
     MaxRecords: number;
     RecordTriggerValue: number;
-}
-export interface INetworkStateView {
-    LossThreshold: number;
-    RttThreshold: number;
 }

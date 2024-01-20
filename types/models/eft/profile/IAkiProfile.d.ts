@@ -1,15 +1,11 @@
-import { IPmcData } from "@spt-aki/models/eft/common/IPmcData";
-import { Item } from "@spt-aki/models/eft/common/tables/IItem";
-import { EquipmentBuildType } from "@spt-aki/models/enums/EquipmentBuildType";
-import { MemberCategory } from "@spt-aki/models/enums/MemberCategory";
-import { MessageType } from "@spt-aki/models/enums/MessageType";
-import { IProfileChangeEvent } from "@spt-aki/models/spt/dialog/ISendMessageDetails";
+import { MessageType } from "../../enums/MessageType";
+import { IPmcData } from "../common/IPmcData";
+import { Item } from "../common/tables/IItem";
 export interface IAkiProfile {
     info: Info;
     characters: Characters;
-    /** Clothing purchases */
     suits: string[];
-    userbuilds: IUserBuilds;
+    weaponbuilds: WeaponBuild[];
     dialogues: Record<string, Dialogue>;
     aki: Aki;
     vitality: Vitality;
@@ -24,7 +20,6 @@ export declare class TraderPurchaseData {
 }
 export interface Info {
     id: string;
-    aid: number;
     username: string;
     password: string;
     wipe: boolean;
@@ -34,53 +29,26 @@ export interface Characters {
     pmc: IPmcData;
     scav: IPmcData;
 }
-export interface IUserBuilds {
-    weaponBuilds: IWeaponBuild[];
-    equipmentBuilds: IEquipmentBuild[];
-}
-export interface IWeaponBuild {
+export interface WeaponBuild {
     id: string;
     name: string;
     root: string;
     items: Item[];
-    type: string;
-}
-export interface IEquipmentBuild {
-    id: string;
-    name: string;
-    root: string;
-    items: Item[];
-    type: string;
-    fastPanel: Record<string, string>;
-    buildType: EquipmentBuildType;
 }
 export interface Dialogue {
-    attachmentsNew: number;
-    type: MessageType;
-    new: number;
     _id: string;
-    Users?: IUserDialogInfo[];
-    pinned: boolean;
     messages: Message[];
-}
-export interface IUserDialogInfo {
-    _id: string;
-    info: IUserDialogDetails;
-}
-export interface IUserDialogDetails {
-    Nickname: string;
-    Side: string;
-    Level: number;
-    MemberCategory: MemberCategory;
+    pinned: boolean;
+    new: number;
+    attachmentsNew: number;
 }
 export interface DialogueInfo {
     attachmentsNew: number;
     new: number;
-    _id: string;
     type: MessageType;
     pinned: boolean;
-    Users?: IUserDialogInfo[];
     message: MessagePreview;
+    _id: string;
 }
 export interface Message {
     _id: string;
@@ -89,14 +57,14 @@ export interface Message {
     dt: number;
     UtcDateTime?: number;
     Member?: IUpdatableChatMember;
-    templateId?: string;
+    templateId: string;
     text?: string;
-    hasRewards?: boolean;
+    hasRewards: boolean;
     rewardCollected: boolean;
-    items?: MessageItems;
+    items: MessageItems;
     maxStorageTime?: number;
     systemData?: ISystemData;
-    profileChangeEvents?: IProfileChangeEvent[];
+    profileChangeEvents?: any[];
 }
 export interface MessagePreview {
     uid: string;
@@ -104,7 +72,6 @@ export interface MessagePreview {
     dt: number;
     templateId: string;
     text?: string;
-    systemData?: ISystemData;
 }
 export interface MessageItems {
     stash?: string;
@@ -122,7 +89,7 @@ export interface IUpdatableChatMember {
     Nickname: string;
     Side: string;
     Level: number;
-    MemberCategory: MemberCategory;
+    MemberCategory: string;
     Ignored: boolean;
     Banned: boolean;
 }
@@ -133,17 +100,12 @@ export interface DateTime {
 export interface Aki {
     version: string;
     mods?: ModDetails[];
-    receivedGifts: ReceivedGift[];
 }
 export interface ModDetails {
     name: string;
     version: string;
     author: string;
     dateAdded: number;
-}
-export interface ReceivedGift {
-    giftId: string;
-    timestampAccepted: number;
 }
 export interface Vitality {
     health: Health;

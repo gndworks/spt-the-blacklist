@@ -1,5 +1,5 @@
-import { IHttpConfig } from "@spt-aki/models/spt/config/IHttpConfig";
-import { ConfigServer } from "@spt-aki/servers/ConfigServer";
+import { IHttpConfig } from "../models/spt/config/IHttpConfig";
+import { ConfigServer } from "../servers/ConfigServer";
 export declare class HttpServerHelper {
     protected configServer: ConfigServer;
     protected httpConfig: IHttpConfig;
@@ -16,17 +16,8 @@ export declare class HttpServerHelper {
     };
     constructor(configServer: ConfigServer);
     getMimeText(key: string): string;
-    /**
-     * Combine ip and port into url
-     * @returns url
-     */
     buildUrl(): string;
-    /**
-     * Prepend http to the url:port
-     * @returns URI
-     */
     getBackendUrl(): string;
-    /** Get websocket url + port */
     getWebsocketUrl(): string;
     sendTextJson(resp: any, output: any): void;
 }

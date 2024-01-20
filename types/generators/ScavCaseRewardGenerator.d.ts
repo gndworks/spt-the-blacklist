@@ -1,17 +1,16 @@
-import { ItemHelper } from "@spt-aki/helpers/ItemHelper";
-import { Product } from "@spt-aki/models/eft/common/tables/IBotBase";
-import { Upd } from "@spt-aki/models/eft/common/tables/IItem";
-import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { IHideoutScavCase } from "@spt-aki/models/eft/hideout/IHideoutScavCase";
-import { IScavCaseConfig } from "@spt-aki/models/spt/config/IScavCaseConfig";
-import { RewardCountAndPriceDetails, ScavCaseRewardCountsAndPrices } from "@spt-aki/models/spt/hideout/ScavCaseRewardCountsAndPrices";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { ConfigServer } from "@spt-aki/servers/ConfigServer";
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { ItemFilterService } from "@spt-aki/services/ItemFilterService";
-import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
-import { HashUtil } from "@spt-aki/utils/HashUtil";
-import { RandomUtil } from "@spt-aki/utils/RandomUtil";
+import { ItemHelper } from "../helpers/ItemHelper";
+import { Product } from "../models/eft/common/tables/IBotBase";
+import { ITemplateItem } from "../models/eft/common/tables/ITemplateItem";
+import { IHideoutScavCase } from "../models/eft/hideout/IHideoutScavCase";
+import { IScavCaseConfig } from "../models/spt/config/IScavCaseConfig";
+import { RewardCountAndPriceDetails, ScavCaseRewardCountsAndPrices } from "../models/spt/hideout/ScavCaseRewardCountsAndPrices";
+import { ILogger } from "../models/spt/utils/ILogger";
+import { ConfigServer } from "../servers/ConfigServer";
+import { DatabaseServer } from "../servers/DatabaseServer";
+import { ItemFilterService } from "../services/ItemFilterService";
+import { RagfairPriceService } from "../services/RagfairPriceService";
+import { HashUtil } from "../utils/HashUtil";
+import { RandomUtil } from "../utils/RandomUtil";
 /**
  * Handle the creation of randomised scav case rewards
  */
@@ -25,8 +24,6 @@ export declare class ScavCaseRewardGenerator {
     protected itemFilterService: ItemFilterService;
     protected configServer: ConfigServer;
     protected scavCaseConfig: IScavCaseConfig;
-    protected dbItemsCache: ITemplateItem[];
-    protected dbAmmoItemsCache: ITemplateItem[];
     constructor(logger: ILogger, randomUtil: RandomUtil, hashUtil: HashUtil, itemHelper: ItemHelper, databaseServer: DatabaseServer, ragfairPriceService: RagfairPriceService, itemFilterService: ItemFilterService, configServer: ConfigServer);
     /**
      * Create an array of rewards that will be given to the player upon completing their scav case build
@@ -35,12 +32,12 @@ export declare class ScavCaseRewardGenerator {
      */
     generate(recipeId: string): Product[];
     /**
-     * Get all db items that are not blacklisted in scavcase config or global blacklist
-     * Store in class field
+     * Get all db items that are not blacklisted in scavcase config
+     * @returns filtered array of db items
      */
-    protected cacheDbItems(): void;
+    protected getDbItems(): ITemplateItem[];
     /**
-     * Pick a number of items to be rewards, the count is defined by the values in `itemFilters` param
+     * Pick a number of items to be rewards, the count is defined by the values in
      * @param items item pool to pick rewards from
      * @param itemFilters how the rewards should be filtered down (by item count)
      * @returns
@@ -81,16 +78,17 @@ export declare class ScavCaseRewardGenerator {
     protected addStackCountToAmmoAndMoney(item: ITemplateItem, resultItem: {
         _id: string;
         _tpl: string;
-        upd: Upd;
+        upd: any;
     }, rarity: string): void;
     /**
+     *
      * @param dbItems all items from the items.json
      * @param itemFilters controls how the dbItems will be filtered and returned (handbook price)
      * @returns filtered dbItems array
      */
     protected getFilteredItemsByPrice(dbItems: ITemplateItem[], itemFilters: RewardCountAndPriceDetails): ITemplateItem[];
     /**
-     * Gathers the reward min and max count params for each reward quality level from config and scavcase.json into a single object
+     * Gathers the reward options from config and scavcase.json into a single object
      * @param scavCaseDetails scavcase.json values
      * @returns ScavCaseRewardCountsAndPrices object
      */

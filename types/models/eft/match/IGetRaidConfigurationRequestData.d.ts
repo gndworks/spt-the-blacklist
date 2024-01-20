@@ -1,7 +1,4 @@
 export interface IGetRaidConfigurationRequestData {
-    keyId: string;
-    side: string;
-    location: string;
     timeVariant: string;
     raidMode: string;
     metabolismDisabled: boolean;
@@ -9,6 +6,7 @@ export interface IGetRaidConfigurationRequestData {
     timeAndWeatherSettings: TimeAndWeatherSettings;
     botSettings: BotSettings;
     wavesSettings: WavesSettings;
+    location: string;
 }
 export interface TimeAndWeatherSettings {
     isRandomTime: boolean;

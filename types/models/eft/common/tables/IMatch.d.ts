@@ -7,5 +7,4 @@ export interface Metrics {
     RenderBins: number[];
     GameUpdateBins: number[];
     MemoryMeasureInterval: number;
-    PauseReasons: number[];
 }

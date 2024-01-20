@@ -1,6 +1,5 @@
 export declare class WeightedRandomHelper {
     /**
-     * @deprecated USE getWeightedValue() WHERE POSSIBLE
      * Gets a tplId from a weighted dictionary
      * @param {tplId: weighting[]} itemArray
      * @returns tplId
@@ -8,14 +7,6 @@ export declare class WeightedRandomHelper {
     getWeightedInventoryItem(itemArray: {
         [tplId: string]: unknown;
     } | ArrayLike<unknown>): string;
-    /**
-     * Choos an item from the passed in array based on the weightings of each
-     * @param itemArray Items and weights to use
-     * @returns Chosen item from array
-     */
-    getWeightedValue<T>(itemArray: {
-        [key: string]: unknown;
-    } | ArrayLike<unknown>): T;
     /**
      * Picks the random item based on its weight.
      * The items with higher weight will be picked more often (with a higher probability).
@@ -30,7 +21,7 @@ export declare class WeightedRandomHelper {
      * @param {number[]} weights
      * @returns {{item: any, index: number}}
      */
-    weightedRandom(items: any[], weights: any[]): {
+    weightedRandom(items: string | any[], weights: string | any[]): {
         item: any;
         index: number;
     };

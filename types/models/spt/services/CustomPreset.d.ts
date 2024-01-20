@@ -1,5 +1,5 @@
-import { IPreset } from "@spt-aki/models/eft/common/IGlobals";
+import { Preset } from "../../eft/common/IGlobals";
 export interface CustomPreset {
     key: string;
-    preset: IPreset;
+    preset: Preset;
 }

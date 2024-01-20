@@ -1,25 +1,19 @@
-import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { JsonUtil } from "@spt-aki/utils/JsonUtil";
-declare class LookupItem<T, I> {
-    readonly byId: Map<string, T>;
-    readonly byParent: Map<string, I[]>;
+import { DatabaseServer } from "../servers/DatabaseServer";
+declare class LookupItem {
+    byId: Record<number, string>;
+    byParent: Record<string, string[]>;
     constructor();
 }
 export declare class LookupCollection {
-    readonly items: LookupItem<number, string>;
-    readonly categories: LookupItem<string, string>;
+    items: LookupItem;
+    categories: LookupItem;
     constructor();
 }
 export declare class HandbookHelper {
     protected databaseServer: DatabaseServer;
-    protected jsonUtil: JsonUtil;
     protected lookupCacheGenerated: boolean;
     protected handbookPriceCache: LookupCollection;
-    constructor(databaseServer: DatabaseServer, jsonUtil: JsonUtil);
-    /**
-     * Create an in-memory cache of all items with associated handbook price in handbookPriceCache class
-     */
+    constructor(databaseServer: DatabaseServer);
     hydrateLookup(): void;
     /**
      * Get price from internal cache, if cache empty look up price directly in handbook (expensive)
@@ -29,23 +23,18 @@ export declare class HandbookHelper {
      */
     getTemplatePrice(tpl: string): number;
     /**
-     * Get all items in template with the given parent category
-     * @param parentId
+     * all items in template with the given parent category
+     * @param x
      * @returns string array
      */
-    templatesWithParent(parentId: string): string[];
+    templatesWithParent(x: string): string[];
     /**
      * Does category exist in handbook cache
      * @param category
      * @returns true if exists in cache
      */
     isCategory(category: string): boolean;
-    /**
-     * Get all items associated with a categories parent
-     * @param categoryParent
-     * @returns string array
-     */
-    childrenCategories(categoryParent: string): string[];
+    childrenCategories(x: string): string[];
     /**
      * Convert non-roubles into roubles
      * @param nonRoubleCurrencyCount Currency count to convert
@@ -60,6 +49,5 @@ export declare class HandbookHelper {
      * @returns currency count in desired type
      */
     fromRUB(roubleCurrencyCount: number, currencyTypeTo: string): number;
-    getCategoryById(handbookId: string): Category;
 }
 export {};

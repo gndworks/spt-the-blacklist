@@ -1,5 +1,3 @@
-import { Ixyz } from "@spt-aki/models/eft/common/Ixyz";
-import { Item } from "@spt-aki/models/eft/common/tables/IItem";
 export interface ILooseLoot {
     spawnpointCount: SpawnpointCount;
     spawnpointsForced: SpawnpointsForced[];
@@ -16,16 +14,19 @@ export interface SpawnpointsForced {
 }
 export interface SpawnpointTemplate {
     Id: string;
-    IsContainer: boolean;
+    IsStatic: boolean;
     useGravity: boolean;
     randomRotation: boolean;
-    Position: Ixyz;
-    Rotation: Ixyz;
-    IsAlwaysSpawn: boolean;
+    Position: Xyz;
+    Rotation: Xyz;
     IsGroupPosition: boolean;
     GroupPositions: any[];
-    Root: string;
+    Root: any;
     Items: Item[];
+}
+export interface Item {
+    _id: string;
+    _tpl?: string;
 }
 export interface Spawnpoint {
     locationId: string;
@@ -33,10 +34,12 @@ export interface Spawnpoint {
     template: SpawnpointTemplate;
     itemDistribution: ItemDistribution[];
 }
-export interface ItemDistribution {
-    composedKey: ComposedKey;
-    relativeProbability: number;
+export interface Xyz {
+    x: number;
+    y: number;
+    z: number;
 }
-export interface ComposedKey {
-    key: string;
+export interface ItemDistribution {
+    tpl: string;
+    relativeProbability: number;
 }

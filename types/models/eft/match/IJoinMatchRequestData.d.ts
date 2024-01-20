@@ -1,6 +1,9 @@
 export interface IJoinMatchRequestData {
-    groupid: string;
+    location: string;
+    savage: boolean;
+    dt: string;
     servers: Server[];
+    keyId: string;
 }
 export interface Server {
     ping: number;

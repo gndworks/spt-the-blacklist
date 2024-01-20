@@ -1,5 +1,3 @@
-import { MinMax } from "@spt-aki/models/common/MinMax";
-import { Ixyz } from "@spt-aki/models/eft/common/Ixyz";
 export interface ILocationBase {
     AccessKeys: string[];
     AirdropParameters: AirdropParameter[];
@@ -18,8 +16,6 @@ export interface ILocationBase {
     BotMaxPlayer: number;
     BotMaxTimePlayer: number;
     BotNormal: number;
-    BotSpawnCountStep: number;
-    BotSpawnPeriodCheck: number;
     BotSpawnTimeOffMax: number;
     BotSpawnTimeOffMin: number;
     BotSpawnTimeOnMax: number;
@@ -32,7 +28,6 @@ export interface ILocationBase {
     Enabled: boolean;
     EnableCoop: boolean;
     GlobalLootChanceModifier: number;
-    GlobalContainerChanceModifier: number;
     IconX: number;
     IconY: number;
     Id: string;
@@ -40,7 +35,6 @@ export interface ILocationBase {
     IsSecret: boolean;
     Locked: boolean;
     Loot: any[];
-    MatchMakerMinPlayersByWaitTime: MinPlayerWaitTime[];
     MaxBotPerZone: number;
     MaxDistToFreePoint: number;
     MaxPlayers: number;
@@ -50,17 +44,12 @@ export interface ILocationBase {
     MinPlayers: number;
     MaxCoopGroup: number;
     Name: string;
-    NonWaveGroupScenario: INonWaveGroupScenario;
     NewSpawn: boolean;
     OcculsionCullingEnabled: boolean;
     OldSpawn: boolean;
     OpenZones: string;
     Preview: Preview;
-    PlayersRequestCount: number;
-    RequiredPlayerLevel?: number;
-    RequiredPlayerLevelMin?: number;
-    RequiredPlayerLevelMax?: number;
-    MinPlayerLvlAccessKeys: number;
+    RequiredPlayerLevel: number;
     PmcMaxPlayersInGroup: number;
     ScavMaxPlayersInGroup: number;
     Rules: string;
@@ -89,13 +78,9 @@ export interface ILocationBase {
     users_summon_seconds: number;
     waves: Wave[];
 }
-export interface INonWaveGroupScenario {
-    Chance: number;
-    Enabled: boolean;
-    MaxToBeGroup: number;
-    MinToBeGroup: number;
-}
-export interface ILimit extends MinMax {
+export interface ILimit {
+    min: number;
+    max: number;
     items: any[];
 }
 export interface AirdropParameter {
@@ -152,12 +137,10 @@ export interface BotLocationModifier {
     Scattering: number;
     VisibleDistance: number;
 }
-export interface MinMaxBot extends MinMax {
-    WildSpawnType: WildSpawnType | string;
-}
-export interface MinPlayerWaitTime {
-    minPlayers: number;
-    time: number;
+export interface MinMaxBot {
+    WildSpawnType: WildSpawnType;
+    max: number;
+    min: number;
 }
 export interface Preview {
     path: string;
@@ -174,7 +157,7 @@ export interface SpawnPointParam {
     DelayToCanSpawnSec: number;
     Id: string;
     Infiltration: string;
-    Position: Ixyz;
+    Position: xyz;
     Rotation: number;
     Sides: string[];
 }
@@ -183,8 +166,13 @@ export interface ColliderParams {
     _props: Props;
 }
 export interface Props {
-    Center: Ixyz;
+    Center: xyz;
     Radius: number;
+}
+export interface xyz {
+    x: number;
+    y: number;
+    z: number;
 }
 export interface Exit {
     Chance: number;
@@ -217,10 +205,8 @@ export interface Wave {
     time_max: number;
     time_min: number;
     sptId?: string;
-    ChanceGroup?: number;
 }
 export declare enum WildSpawnType {
     ASSAULT = "assault",
-    MARKSMAN = "marksman",
-    PMCBOT = "pmcbot"
+    MARKSMAN = "marksman"
 }

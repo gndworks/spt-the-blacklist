@@ -1,5 +1,5 @@
-import { MinMax } from "@spt-aki/models/common/MinMax";
-import { Skills } from "@spt-aki/models/eft/common/tables/IBotBase";
+import { MinMax } from "../../../common/MinMax";
+import { Skills } from "./IBotBase";
 export interface IBotType {
     appearance: Appearance;
     chances: Chances;
@@ -71,7 +71,6 @@ export interface ModsChances {
     mod_tactical_001: number;
     mod_tactical_002: number;
     mod_tactical_003: number;
-    mod_handguard: number;
 }
 export interface Difficulties {
     easy: Difficulty;
@@ -102,24 +101,16 @@ export interface Experience {
     standingForKill: number;
 }
 export interface Generation {
-    items: GenerationWeightingItems;
+    items: ItemMinMax;
 }
-export interface GenerationWeightingItems {
-    grenades: GenerationData;
-    healing: GenerationData;
-    drugs: GenerationData;
-    stims: GenerationData;
-    backpackLoot: GenerationData;
-    pocketLoot: GenerationData;
-    vestLoot: GenerationData;
-    magazines: GenerationData;
-    specialItems: GenerationData;
-}
-export interface GenerationData {
-    /** key: number of items, value: weighting */
-    weights: Record<string, number>;
-    /** Array of item tpls */
-    whitelist: string[];
+export interface ItemMinMax {
+    grenades: MinMax;
+    healing: MinMax;
+    drugs: MinMax;
+    stims: MinMax;
+    looseLoot: MinMax;
+    magazines: MinMax;
+    specialItems: MinMax;
 }
 export interface Health {
     BodyParts: BodyPart[];

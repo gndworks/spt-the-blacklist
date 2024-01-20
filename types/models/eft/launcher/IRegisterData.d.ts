@@ -1,4 +1,4 @@
-import { ILoginRequestData } from "@spt-aki/models/eft/launcher/ILoginRequestData";
+import { ILoginRequestData } from "./ILoginRequestData";
 export interface IRegisterData extends ILoginRequestData {
     edition: string;
 }

@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { IncomingMessage, ServerResponse } from "node:http";
+import { IncomingMessage, ServerResponse } from "http";
 import { DependencyContainer } from "tsyringe";
 export declare class HttpListenerModService {
     protected container: DependencyContainer;

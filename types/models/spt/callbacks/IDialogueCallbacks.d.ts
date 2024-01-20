@@ -1,20 +1,20 @@
-import { IEmptyRequestData } from "@spt-aki/models/eft/common/IEmptyRequestData";
-import { IFriendRequestData } from "@spt-aki/models/eft/dialog/IFriendRequestData";
-import { IGetAllAttachmentsRequestData } from "@spt-aki/models/eft/dialog/IGetAllAttachmentsRequestData";
-import { IGetAllAttachmentsResponse } from "@spt-aki/models/eft/dialog/IGetAllAttachmentsResponse";
-import { IGetChatServerListRequestData } from "@spt-aki/models/eft/dialog/IGetChatServerListRequestData";
-import { IGetFriendListDataResponse } from "@spt-aki/models/eft/dialog/IGetFriendListDataResponse";
-import { IGetMailDialogInfoRequestData } from "@spt-aki/models/eft/dialog/IGetMailDialogInfoRequestData";
-import { IGetMailDialogListRequestData } from "@spt-aki/models/eft/dialog/IGetMailDialogListRequestData";
-import { IGetMailDialogViewRequestData } from "@spt-aki/models/eft/dialog/IGetMailDialogViewRequestData";
-import { IGetMailDialogViewResponseData } from "@spt-aki/models/eft/dialog/IGetMailDialogViewResponseData";
-import { IPinDialogRequestData } from "@spt-aki/models/eft/dialog/IPinDialogRequestData";
-import { IRemoveDialogRequestData } from "@spt-aki/models/eft/dialog/IRemoveDialogRequestData";
-import { ISendMessageRequest } from "@spt-aki/models/eft/dialog/ISendMessageRequest";
-import { ISetDialogReadRequestData } from "@spt-aki/models/eft/dialog/ISetDialogReadRequestData";
-import { IGetBodyResponseData } from "@spt-aki/models/eft/httpResponse/IGetBodyResponseData";
-import { INullResponseData } from "@spt-aki/models/eft/httpResponse/INullResponseData";
-import { DialogueInfo } from "@spt-aki/models/eft/profile/IAkiProfile";
+import { IGetBodyResponseData } from "../../eft/httpResponse/IGetBodyResponseData";
+import { INullResponseData } from "../../eft/httpResponse/INullResponseData";
+import { IGetMailDialogViewRequestData } from "../../eft/dialog/IGetMailDialogViewRequestData";
+import { IGetMailDialogInfoRequestData } from "../../eft/dialog/IGetMailDialogInfoRequestData";
+import { IRemoveDialogRequestData } from "../../eft/dialog/IRemoveDialogRequestData";
+import { IGetMailDialogListRequestData } from "../../eft/dialog/IGetMailDialogListRequestData";
+import { IEmptyRequestData } from "../../eft/common/IEmptyRequestData";
+import { IFriendRequestData } from "../../eft/dialog/IFriendRequestData";
+import { IPinDialogRequestData } from "../../eft/dialog/IPinDialogRequestData";
+import { ISetDialogReadRequestData } from "../../eft/dialog/ISetDialogReadRequestData";
+import { IGetAllAttachmentsRequestData } from "../../eft/dialog/IGetAllAttachmentsRequestData";
+import { IGetChatServerListRequestData } from "../../eft/dialog/IGetChatServerListRequestData";
+import { IGetFriendListDataResponse } from "../../eft/dialog/IGetFriendListDataResponse";
+import { ISendMessageRequest } from "../../eft/dialog/ISendMessageRequest";
+import { IGetMailDialogViewResponseData } from "../../eft/dialog/IGetMailDialogViewResponseData";
+import { IGetAllAttachmentsResponse } from "../../eft/dialog/IGetAllAttachmentsResponse";
+import { DialogueInfo } from "../../eft/profile/IAkiProfile";
 export interface IDialogueCallbacks {
     getFriendList(url: string, info: IEmptyRequestData, sessionID: string): IGetBodyResponseData<IGetFriendListDataResponse>;
     getChatServerList(url: string, info: IGetChatServerListRequestData, sessionID: string): IGetBodyResponseData<any[]>;
@@ -28,7 +28,7 @@ export interface IDialogueCallbacks {
     getAllAttachments(url: string, info: IGetAllAttachmentsRequestData, sessionID: string): IGetBodyResponseData<IGetAllAttachmentsResponse>;
     listOutbox(url: string, info: IEmptyRequestData, sessionID: string): IGetBodyResponseData<any[]>;
     listInbox(url: string, info: IEmptyRequestData, sessionID: string): IGetBodyResponseData<any[]>;
-    sendFriendRequest(url: string, request: IFriendRequestData, sessionID: string): INullResponseData;
+    friendRequest(url: string, request: IFriendRequestData, sessionID: string): INullResponseData;
     sendMessage(url: string, request: ISendMessageRequest, sessionID: string): IGetBodyResponseData<number>;
     update(): boolean;
 }

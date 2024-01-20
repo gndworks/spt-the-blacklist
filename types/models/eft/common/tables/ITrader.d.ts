@@ -1,4 +1,4 @@
-import { Item } from "@spt-aki/models/eft/common/tables/IItem";
+import { Item } from "./IItem";
 export interface ITrader {
     assort: ITraderAssort;
     base: ITraderBase;
@@ -82,9 +82,9 @@ export interface ISuit {
     tid: string;
     suiteId: string;
     isActive: boolean;
-    requirements: ISuitRequirements;
+    requirements: Requirements;
 }
-export interface ISuitRequirements {
+export interface Requirements {
     loyaltyLevel: number;
     profileLevel: number;
     standing: number;

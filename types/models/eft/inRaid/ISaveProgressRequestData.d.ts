@@ -1,11 +1,8 @@
-import { IPostRaidPmcData } from "@spt-aki/models/eft/common/IPmcData";
-import { ISyncHealthRequestData } from "@spt-aki/models/eft/health/ISyncHealthRequestData";
-import { IInsuredItemsData } from "@spt-aki/models/eft/inRaid/IInsuredItemsData";
-import { PlayerRaidEndState } from "@spt-aki/models/enums/PlayerRaidEndState";
+import { IPmcData } from "../common/IPmcData";
+import { ISyncHealthRequestData } from "../health/ISyncHealthRequestData";
 export interface ISaveProgressRequestData {
-    exit: PlayerRaidEndState;
-    profile: IPostRaidPmcData;
+    exit: string;
+    profile: IPmcData;
     isPlayerScav: boolean;
     health: ISyncHealthRequestData;
-    insurance: IInsuredItemsData[];
 }

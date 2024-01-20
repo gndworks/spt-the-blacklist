@@ -1,13 +1,13 @@
-import { MinMax } from "@spt-aki/models/common/MinMax";
-import { WindDirection } from "@spt-aki/models/enums/WindDirection";
-import { IBaseConfig } from "@spt-aki/models/spt/config/IBaseConfig";
+import { WindDirection } from "../../../models/enums/WindDirection";
+import { MinMax } from "../../common/MinMax";
+import { IBaseConfig } from "./IBaseConfig";
 export interface IWeatherConfig extends IBaseConfig {
     kind: "aki-weather";
     acceleration: number;
     weather: Weather;
 }
 export interface Weather {
-    clouds: WeatherSettings<string>;
+    clouds: MinMax;
     windSpeed: WeatherSettings<number>;
     windDirection: WeatherSettings<WindDirection>;
     windGustiness: MinMax;

@@ -1,11 +1,10 @@
-import { SaveLoadRouter } from "@spt-aki/di/Router";
-import { IAkiProfile, Info } from "@spt-aki/models/eft/profile/IAkiProfile";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { LocalisationService } from "@spt-aki/services/LocalisationService";
-import { HashUtil } from "@spt-aki/utils/HashUtil";
-import { JsonUtil } from "@spt-aki/utils/JsonUtil";
-import { VFS } from "@spt-aki/utils/VFS";
-import { ConfigServer } from "./ConfigServer";
+import { SaveLoadRouter } from "../di/Router";
+import { IAkiProfile, Info } from "../models/eft/profile/IAkiProfile";
+import { ILogger } from "../models/spt/utils/ILogger";
+import { LocalisationService } from "../services/LocalisationService";
+import { HashUtil } from "../utils/HashUtil";
+import { JsonUtil } from "../utils/JsonUtil";
+import { VFS } from "../utils/VFS";
 export declare class SaveServer {
     protected vfs: VFS;
     protected saveLoadRouters: SaveLoadRouter[];
@@ -13,12 +12,11 @@ export declare class SaveServer {
     protected hashUtil: HashUtil;
     protected localisationService: LocalisationService;
     protected logger: ILogger;
-    protected configServer: ConfigServer;
     protected profileFilepath: string;
     protected profiles: {};
     protected onBeforeSaveCallbacks: {};
     protected saveMd5: {};
-    constructor(vfs: VFS, saveLoadRouters: SaveLoadRouter[], jsonUtil: JsonUtil, hashUtil: HashUtil, localisationService: LocalisationService, logger: ILogger, configServer: ConfigServer);
+    constructor(vfs: VFS, saveLoadRouters: SaveLoadRouter[], jsonUtil: JsonUtil, hashUtil: HashUtil, localisationService: LocalisationService, logger: ILogger);
     /**
      * Add callback to occur prior to saving profile changes
      * @param id Id for save callback

@@ -1,7 +1,7 @@
 export interface ScavCaseRewardCountsAndPrices {
-    Common: RewardCountAndPriceDetails;
-    Rare: RewardCountAndPriceDetails;
-    Superrare: RewardCountAndPriceDetails;
+    common: RewardCountAndPriceDetails;
+    rare: RewardCountAndPriceDetails;
+    superrare: RewardCountAndPriceDetails;
 }
 export interface RewardCountAndPriceDetails {
     minCount: number;

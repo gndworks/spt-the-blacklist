@@ -1,4 +1,4 @@
-import { DependencyContainer } from "@spt-aki/models/external/tsyringe";
+import { DependencyContainer } from "./tsyringe";
 export interface IPreAkiLoadModAsync {
     preAkiLoadAsync(container: DependencyContainer): Promise<void>;
 }

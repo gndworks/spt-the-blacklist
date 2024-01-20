@@ -1,5 +1,5 @@
-import { Item } from "@spt-aki/models/eft/common/tables/IItem";
-import { MemberCategory } from "@spt-aki/models/enums/MemberCategory";
+import { MemberCategory } from "../../enums/MemberCategory";
+import { Item } from "../common/tables/IItem";
 export interface IRagfairOffer {
     sellResult?: SellResult[];
     _id: string;

@@ -1,4 +1,4 @@
-import { RagfairSort } from "@spt-aki/models/enums/RagfairSort";
+import { RagfairSort } from "../../enums/RagfairSort";
 export interface ISearchRequestData {
     page: number;
     limit: number;

@@ -1,9 +1,7 @@
-import { Item } from "@spt-aki/models/eft/common/tables/IItem";
-import { QuestRewardType } from "@spt-aki/models/enums/QuestRewardType";
-import { QuestStatus } from "@spt-aki/models/enums/QuestStatus";
-import { QuestTypeEnum } from "@spt-aki/models/enums/QuestTypeEnum";
+import { QuestRewardType } from "../../../enums/QuestRewardType";
+import { QuestStatus } from "../../../enums/QuestStatus";
+import { Item } from "./IItem";
 export interface IQuest {
-    /** SPT addition - human readable quest name */
     QuestName?: string;
     _id: string;
     canShowNotificationsInGame: boolean;
@@ -15,10 +13,9 @@ export interface IQuest {
     traderId: string;
     location: string;
     image: string;
-    type: QuestTypeEnum;
+    type: string;
     isKey: boolean;
-    /** @deprecated - Likely not used, use 'status' instead */
-    questStatus: QuestStatus;
+    questStatus: any;
     restartable: boolean;
     instantComplete: boolean;
     secretQuest: boolean;
@@ -26,14 +23,10 @@ export interface IQuest {
     successMessageText: string;
     templateId: string;
     rewards: Rewards;
-    /** Becomes 'AppearStatus' inside client */
     status: string | number;
     KeyQuest: boolean;
     changeQuestMessageText: string;
-    /** "Pmc" or "Scav" */
     side: string;
-    /** Status of quest to player */
-    sptStatus?: QuestStatus;
 }
 export interface Conditions {
     Started: AvailableForConditions[];
@@ -53,7 +46,7 @@ export interface AvailableForProps {
     parentId: string;
     isEncoded: boolean;
     dynamicLocale: boolean;
-    value?: string | number;
+    value?: number;
     compareMethod?: string;
     visibilityConditions?: VisibilityCondition[];
     target?: string | string[];
@@ -71,7 +64,6 @@ export interface AvailableForProps {
     zoneId?: string;
     type?: boolean;
     countInRaid?: boolean;
-    globalQuestCounterId?: any;
 }
 export interface AvailableForCounter {
     id: string;

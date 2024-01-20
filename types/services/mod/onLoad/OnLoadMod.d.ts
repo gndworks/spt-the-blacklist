@@ -1,4 +1,4 @@
-import { OnLoad } from "@spt-aki/di/OnLoad";
+import { OnLoad } from "../../../di/OnLoad";
 export declare class OnLoadMod implements OnLoad {
     private onLoadOverride;
     private getRouteOverride;

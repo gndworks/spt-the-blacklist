@@ -1,21 +1,20 @@
-import { BotEquipmentModGenerator } from "@spt-aki/generators/BotEquipmentModGenerator";
-import { BotLootGenerator } from "@spt-aki/generators/BotLootGenerator";
-import { BotWeaponGenerator } from "@spt-aki/generators/BotWeaponGenerator";
-import { BotGeneratorHelper } from "@spt-aki/helpers/BotGeneratorHelper";
-import { BotHelper } from "@spt-aki/helpers/BotHelper";
-import { ItemHelper } from "@spt-aki/helpers/ItemHelper";
-import { WeightedRandomHelper } from "@spt-aki/helpers/WeightedRandomHelper";
-import { Inventory as PmcInventory } from "@spt-aki/models/eft/common/tables/IBotBase";
-import { Chances, Generation, IBotType, Inventory, Mods } from "@spt-aki/models/eft/common/tables/IBotType";
-import { EquipmentSlots } from "@spt-aki/models/enums/EquipmentSlots";
-import { EquipmentFilterDetails, IBotConfig, RandomisationDetails } from "@spt-aki/models/spt/config/IBotConfig";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { ConfigServer } from "@spt-aki/servers/ConfigServer";
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { BotEquipmentModPoolService } from "@spt-aki/services/BotEquipmentModPoolService";
-import { LocalisationService } from "@spt-aki/services/LocalisationService";
-import { HashUtil } from "@spt-aki/utils/HashUtil";
-import { RandomUtil } from "@spt-aki/utils/RandomUtil";
+import { BotGeneratorHelper } from "../helpers/BotGeneratorHelper";
+import { BotHelper } from "../helpers/BotHelper";
+import { WeightedRandomHelper } from "../helpers/WeightedRandomHelper";
+import { Inventory as PmcInventory } from "../models/eft/common/tables/IBotBase";
+import { Chances, Generation, IBotType, Inventory, Mods } from "../models/eft/common/tables/IBotType";
+import { EquipmentSlots } from "../models/enums/EquipmentSlots";
+import { EquipmentFilterDetails, IBotConfig, RandomisationDetails } from "../models/spt/config/IBotConfig";
+import { ILogger } from "../models/spt/utils/ILogger";
+import { ConfigServer } from "../servers/ConfigServer";
+import { DatabaseServer } from "../servers/DatabaseServer";
+import { BotEquipmentModPoolService } from "../services/BotEquipmentModPoolService";
+import { LocalisationService } from "../services/LocalisationService";
+import { HashUtil } from "../utils/HashUtil";
+import { RandomUtil } from "../utils/RandomUtil";
+import { BotEquipmentModGenerator } from "./BotEquipmentModGenerator";
+import { BotLootGenerator } from "./BotLootGenerator";
+import { BotWeaponGenerator } from "./BotWeaponGenerator";
 export declare class BotInventoryGenerator {
     protected logger: ILogger;
     protected hashUtil: HashUtil;
@@ -26,17 +25,16 @@ export declare class BotInventoryGenerator {
     protected botGeneratorHelper: BotGeneratorHelper;
     protected botHelper: BotHelper;
     protected weightedRandomHelper: WeightedRandomHelper;
-    protected itemHelper: ItemHelper;
     protected localisationService: LocalisationService;
     protected botEquipmentModPoolService: BotEquipmentModPoolService;
     protected botEquipmentModGenerator: BotEquipmentModGenerator;
     protected configServer: ConfigServer;
     protected botConfig: IBotConfig;
-    constructor(logger: ILogger, hashUtil: HashUtil, randomUtil: RandomUtil, databaseServer: DatabaseServer, botWeaponGenerator: BotWeaponGenerator, botLootGenerator: BotLootGenerator, botGeneratorHelper: BotGeneratorHelper, botHelper: BotHelper, weightedRandomHelper: WeightedRandomHelper, itemHelper: ItemHelper, localisationService: LocalisationService, botEquipmentModPoolService: BotEquipmentModPoolService, botEquipmentModGenerator: BotEquipmentModGenerator, configServer: ConfigServer);
+    constructor(logger: ILogger, hashUtil: HashUtil, randomUtil: RandomUtil, databaseServer: DatabaseServer, botWeaponGenerator: BotWeaponGenerator, botLootGenerator: BotLootGenerator, botGeneratorHelper: BotGeneratorHelper, botHelper: BotHelper, weightedRandomHelper: WeightedRandomHelper, localisationService: LocalisationService, botEquipmentModPoolService: BotEquipmentModPoolService, botEquipmentModGenerator: BotEquipmentModGenerator, configServer: ConfigServer);
     /**
      * Add equipment/weapons/loot to bot
      * @param sessionId Session id
-     * @param botJsonTemplate Base json db file for the bot having its loot generated
+     * @param botJsonTemplate bot/x.json data from db
      * @param botRole Role bot has (assault/pmcBot)
      * @param isPmc Is bot being converted into a pmc
      * @param botLevel Level of bot being generated
@@ -105,10 +103,10 @@ export declare class BotInventoryGenerator {
      * @param equipmentChances Chances bot can have equipment equipped
      * @param botRole assault/pmcBot/bossTagilla etc
      * @param isPmc Is the bot being generated as a pmc
-     * @param itemGenerationWeights
+     * @param itemGenerationLimitsMinMax
      */
     protected addWeaponAndMagazinesToInventory(sessionId: string, weaponSlot: {
         slot: EquipmentSlots;
         shouldSpawn: boolean;
-    }, templateInventory: Inventory, botInventory: PmcInventory, equipmentChances: Chances, botRole: string, isPmc: boolean, itemGenerationWeights: Generation, botLevel: number): void;
+    }, templateInventory: Inventory, botInventory: PmcInventory, equipmentChances: Chances, botRole: string, isPmc: boolean, itemGenerationLimitsMinMax: Generation, botLevel: number): void;
 }

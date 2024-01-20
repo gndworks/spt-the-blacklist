@@ -1,14 +1,12 @@
-import { Item, Upd } from "@spt-aki/models/eft/common/tables/IItem";
-import { IPmcDataRepeatableQuest } from "@spt-aki/models/eft/common/tables/IRepeatableQuests";
-import { IRagfairOffer } from "@spt-aki/models/eft/ragfair/IRagfairOffer";
-import { HideoutAreas } from "@spt-aki/models/enums/HideoutAreas";
-import { MemberCategory } from "@spt-aki/models/enums/MemberCategory";
-import { QuestStatus } from "@spt-aki/models/enums/QuestStatus";
+import { HideoutAreas } from "../../../enums/HideoutAreas";
+import { MemberCategory } from "../../../enums/MemberCategory";
+import { QuestStatus } from "../../../enums/QuestStatus";
+import { IRagfairOffer } from "../../ragfair/IRagfairOffer";
+import { Item, Upd } from "./IItem";
+import { IPmcDataRepeatableQuest } from "./IRepeatableQuests";
 export interface IBotBase {
     _id: string;
-    aid: number;
-    /** SPT property - use to store player id - TODO - move to AID ( account id as guid of choice) */
-    sessionId: string;
+    aid: string;
     savage?: string;
     Info: Info;
     Customization: Customization;
@@ -21,15 +19,14 @@ export interface IBotBase {
     BackendCounters: Record<string, BackendCounter>;
     InsuredItems: InsuredItem[];
     Hideout: Hideout;
-    Quests: IQuestStatus[];
+    Quests: Quest[];
     TradersInfo: Record<string, TraderInfo>;
     UnlockedInfo: IUnlockedInfo;
     RagfairInfo: RagfairInfo;
     RepeatableQuests: IPmcDataRepeatableQuest[];
     Bonuses: Bonus[];
     Notes: Notes;
-    CarExtractCounts: Record<string, number>;
-    CoopExtractCounts: Record<string, number>;
+    CarExtractCounts: CarExtractCounts;
     SurvivorClass: SurvivorClass;
     WishList: string[];
     /** SPT specific property used during bot generation in raid */
@@ -43,7 +40,6 @@ export interface Info {
     Nickname: string;
     LowerNickname: string;
     Side: string;
-    SquadInviteRestriction: boolean;
     Voice: string;
     Level: number;
     Experience: number;
@@ -124,36 +120,30 @@ export interface Inventory {
     sortingTable: string;
     questRaidItems: string;
     questStashItems: string;
-    /** Key is hideout area enum numeric as string e.g. "24", value is area _id  */
-    hideoutAreaStashes: Record<string, string>;
-    fastPanel: Record<string, string>;
+    fastPanel: FastPanel;
 }
-export interface IBaseJsonSkills {
-    Common: Record<string, Common>;
-    Mastering: Record<string, Mastering>;
-    Points: number;
+export interface FastPanel {
 }
 export interface Skills {
     Common: Common[];
     Mastering: Mastering[];
     Points: number;
 }
-export interface IBaseSkill {
+export interface Common {
+    Id: string;
+    Progress: number;
+    PointsEarnedDuringSession?: number;
+    LastAccess?: number;
+    max?: number;
+    min?: number;
+}
+export interface Mastering {
     Id: string;
     Progress: number;
     max?: number;
     min?: number;
 }
-export interface Common extends IBaseSkill {
-    PointsEarnedDuringSession?: number;
-    LastAccess?: number;
-}
-export interface Mastering extends IBaseSkill {
-}
 export interface Stats {
-    Eft: IEftStats;
-}
-export interface IEftStats {
     CarriedQuestItems: string[];
     Victims: Victim[];
     TotalSessionExperience: number;
@@ -267,7 +257,7 @@ export interface LastPlayerStateInfo {
     Nickname: string;
     Side: string;
     Level: number;
-    MemberCategory: MemberCategory;
+    MemberCategory: string;
 }
 export interface BackendCounter {
     id: string;
@@ -275,15 +265,13 @@ export interface BackendCounter {
     value: number;
 }
 export interface InsuredItem {
-    /** Trader Id item was insured by */
     tid: string;
     itemId: string;
 }
 export interface Hideout {
     Production: Record<string, Productive>;
     Areas: HideoutArea[];
-    Improvement: Record<string, IHideoutImprovement>;
-    Seed: number;
+    Improvements: Record<string, IHideoutImprovement>;
     sptUpdateLastRunTimestamp: number;
 }
 export interface IHideoutImprovement {
@@ -300,17 +288,7 @@ export interface Productive {
     SkipTime?: number;
     /** Seconds needed to fully craft */
     ProductionTime?: number;
-    GivenItemsInStart?: string[];
-    Interrupted?: boolean;
-    /** Used in hideout production.json */
-    needFuelForAllProductionTime?: boolean;
-    /** Used when sending data to client */
-    NeedFuelForAllProductionTime?: boolean;
     sptIsScavCase?: boolean;
-    /** Some crafts are always inProgress, but need to be reset, e.g. water collector */
-    sptIsComplete?: boolean;
-    /** Is the craft a Continuous, e.g bitcoins/water collector */
-    sptIsContinuous?: boolean;
 }
 export interface Production extends Productive {
     RecipeId: string;
@@ -351,6 +329,8 @@ export interface LastCompleted {
 export interface Notes {
     Notes: Note[];
 }
+export interface CarExtractCounts {
+}
 export declare enum SurvivorClass {
     UNKNOWN = 0,
     NEUTRALIZER = 1,
@@ -358,22 +338,22 @@ export declare enum SurvivorClass {
     PARAMEDIC = 3,
     SURVIVOR = 4
 }
-export interface IQuestStatus {
+export interface Quest {
     qid: string;
     startTime: number;
     status: QuestStatus;
     statusTimers?: Record<string, number>;
-    /** Property does not exist in live profile data, but is used by ProfileChanges.questsStatus when sent to client*/
+    /** SPT specific property */
     completedConditions?: string[];
     availableAfter?: number;
 }
 export interface TraderInfo {
     loyaltyLevel: number;
     salesSum: number;
+    disabled: boolean;
     standing: number;
     nextResupply: number;
     unlocked: boolean;
-    disabled: boolean;
 }
 export interface RagfairInfo {
     rating: number;

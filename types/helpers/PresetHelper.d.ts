@@ -1,23 +1,18 @@
-import { IPreset } from "@spt-aki/models/eft/common/IGlobals";
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { JsonUtil } from "@spt-aki/utils/JsonUtil";
+import { Preset } from "../models/eft/common/IGlobals";
+import { DatabaseServer } from "../servers/DatabaseServer";
+import { JsonUtil } from "../utils/JsonUtil";
 export declare class PresetHelper {
     protected jsonUtil: JsonUtil;
     protected databaseServer: DatabaseServer;
     protected lookup: Record<string, string[]>;
-    protected defaultPresets: Record<string, IPreset>;
+    protected defaultPresets: Record<string, Preset>;
     constructor(jsonUtil: JsonUtil, databaseServer: DatabaseServer);
     hydratePresetStore(input: Record<string, string[]>): void;
-    getDefaultPresets(): Record<string, IPreset>;
+    getDefaultPresets(): Record<string, Preset>;
     isPreset(id: string): boolean;
     hasPreset(templateId: string): boolean;
-    getPreset(id: string): IPreset;
-    getPresets(templateId: string): IPreset[];
-    /**
-     * Get the default preset for passed in weapon id
-     * @param templateId Weapon id to get preset for
-     * @returns Null if no default preset, otherwise IPreset
-     */
-    getDefaultPreset(templateId: string): IPreset;
+    getPreset(id: string): Preset;
+    getPresets(templateId: string): Preset[];
+    getDefaultPreset(templateId: string): Preset;
     getBaseItemTpl(presetId: string): string;
 }

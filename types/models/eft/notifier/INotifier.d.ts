@@ -1,4 +1,3 @@
-import { Message } from "@spt-aki/models/eft/profile/IAkiProfile";
 export interface INotifierChannel {
     server: string;
     channel_id: string;
@@ -6,19 +5,10 @@ export interface INotifierChannel {
     notifierServer: string;
     ws: string;
 }
+import { Message } from "../profile/IAkiProfile";
 export interface INotification {
-    type: NotificationType;
+    type: "RagfairOfferSold" | "new_message" | "ping";
     eventId: string;
     dialogId?: string;
     message?: Message;
-}
-export declare enum NotificationType {
-    RAGFAIR_OFFER_SOLD = "RagfairOfferSold",
-    RAGFAIR_RATING_CHANGE = "RagfairRatingChange",
-    /** ChatMessageReceived */
-    NEW_MESSAGE = "new_message",
-    PING = "ping",
-    TRADER_SUPPLY = "TraderSupply",
-    TRADER_STANDING = "TraderStanding",
-    UNLOCK_TRADER = "UnlockTrader"
 }

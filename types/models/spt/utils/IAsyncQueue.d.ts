@@ -1,4 +1,4 @@
-import { ICommand } from "@spt-aki/models/spt/utils/ICommand";
+import { ICommand } from "./ICommand";
 export interface IAsyncQueue {
     waitFor(command: ICommand): Promise<any>;
 }

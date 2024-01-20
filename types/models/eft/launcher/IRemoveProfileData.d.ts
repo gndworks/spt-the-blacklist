@@ -1,2 +1,2 @@
-import { ILoginRequestData } from "@spt-aki/models/eft/launcher/ILoginRequestData";
+import { ILoginRequestData } from "./ILoginRequestData";
 export type IRemoveProfileData = ILoginRequestData;

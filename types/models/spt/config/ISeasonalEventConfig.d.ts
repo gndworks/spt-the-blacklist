@@ -1,5 +1,4 @@
-import { SeasonalEventType } from "@spt-aki/models/enums/SeasonalEventType";
-import { IBaseConfig } from "@spt-aki/models/spt/config/IBaseConfig";
+import { IBaseConfig } from "./IBaseConfig";
 export interface ISeasonalEventConfig extends IBaseConfig {
     kind: "aki-seasonalevents";
     enableSeasonalEventDetection: boolean;
@@ -10,7 +9,6 @@ export interface ISeasonalEventConfig extends IBaseConfig {
 }
 export interface ISeasonalEvent {
     name: string;
-    type: SeasonalEventType;
     startDay: number;
     startMonth: number;
     endDay: number;

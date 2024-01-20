@@ -1,17 +1,15 @@
 import { DependencyContainer } from "tsyringe";
-import { BundleLoader } from "@spt-aki/loaders/BundleLoader";
-import { ModLoadOrder } from "@spt-aki/loaders/ModLoadOrder";
-import { ModTypeCheck } from "@spt-aki/loaders/ModTypeCheck";
-import { ModDetails } from "@spt-aki/models/eft/profile/IAkiProfile";
-import { ICoreConfig } from "@spt-aki/models/spt/config/ICoreConfig";
-import { IModLoader } from "@spt-aki/models/spt/mod/IModLoader";
-import { IPackageJsonData } from "@spt-aki/models/spt/mod/IPackageJsonData";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { ConfigServer } from "@spt-aki/servers/ConfigServer";
-import { LocalisationService } from "@spt-aki/services/LocalisationService";
-import { ModCompilerService } from "@spt-aki/services/ModCompilerService";
-import { JsonUtil } from "@spt-aki/utils/JsonUtil";
-import { VFS } from "@spt-aki/utils/VFS";
+import { ICoreConfig } from "../models/spt/config/ICoreConfig";
+import { IModLoader } from "../models/spt/mod/IModLoader";
+import { IPackageJsonData } from "../models/spt/mod/IPackageJsonData";
+import { ILogger } from "../models/spt/utils/ILogger";
+import { ConfigServer } from "../servers/ConfigServer";
+import { LocalisationService } from "../services/LocalisationService";
+import { ModCompilerService } from "../services/ModCompilerService";
+import { JsonUtil } from "../utils/JsonUtil";
+import { VFS } from "../utils/VFS";
+import { BundleLoader } from "./BundleLoader";
+import { ModTypeCheck } from "./ModTypeCheck";
 export declare class PreAkiModLoader implements IModLoader {
     protected logger: ILogger;
     protected vfs: VFS;
@@ -20,7 +18,6 @@ export declare class PreAkiModLoader implements IModLoader {
     protected bundleLoader: BundleLoader;
     protected localisationService: LocalisationService;
     protected configServer: ConfigServer;
-    protected modLoadOrder: ModLoadOrder;
     protected modTypeCheck: ModTypeCheck;
     protected static container: DependencyContainer;
     protected readonly basepath = "user/mods/";
@@ -28,9 +25,7 @@ export declare class PreAkiModLoader implements IModLoader {
     protected order: Record<string, number>;
     protected imported: Record<string, IPackageJsonData>;
     protected akiConfig: ICoreConfig;
-    protected serverDependencies: Record<string, string>;
-    protected skippedMods: Set<string>;
-    constructor(logger: ILogger, vfs: VFS, jsonUtil: JsonUtil, modCompilerService: ModCompilerService, bundleLoader: BundleLoader, localisationService: LocalisationService, configServer: ConfigServer, modLoadOrder: ModLoadOrder, modTypeCheck: ModTypeCheck);
+    constructor(logger: ILogger, vfs: VFS, jsonUtil: JsonUtil, modCompilerService: ModCompilerService, bundleLoader: BundleLoader, localisationService: LocalisationService, configServer: ConfigServer, modTypeCheck: ModTypeCheck);
     load(container: DependencyContainer): Promise<void>;
     /**
      * Returns a list of mods with preserved load order
@@ -38,65 +33,44 @@ export declare class PreAkiModLoader implements IModLoader {
      */
     getImportedModsNames(): string[];
     getImportedModDetails(): Record<string, IPackageJsonData>;
-    getProfileModsGroupedByModName(profileMods: ModDetails[]): ModDetails[];
     getModPath(mod: string): string;
-    protected importModsAsync(): Promise<void>;
-    protected sortMods(prev: string, next: string, missingFromOrderJSON: Record<string, boolean>): number;
+    protected importMods(): Promise<void>;
     /**
-     * Check for duplicate mods loaded, show error if any
-     * @param modPackageData map of mod package.json data
+     * Check for duplciate mods loaded, show error if duplicate mod found
+     * @param modPackageData dictionary of mod package.json data
      */
-    protected checkForDuplicateMods(modPackageData: Map<string, IPackageJsonData>): void;
+    protected checkForDuplicateMods(modPackageData: Record<string, IPackageJsonData>): void;
     /**
-     * Returns an array of valid mods.
-     *
+     * Check for and return duplicate strings inside an array
+     * @param stringArray Array to check for duplicates
+     * @returns string array of duplicates, empty if none found
+     */
+    protected getDuplicates(stringArray: string[]): string[];
+    /**
+     * Get an array of mods with errors that prevent them from working with SPT
      * @param mods mods to validate
-     * @returns array of mod folder names
+     * @returns Mod names as array
      */
-    protected getValidMods(mods: string[]): string[];
+    protected getBrokenMods(mods: string[]): string[];
     /**
      * Get packageJson data for mods
      * @param mods mods to get packageJson for
-     * @returns map <modFolderName - package.json>
+     * @returns dictionary <modName - package.json>
      */
-    protected getModsPackageData(mods: string[]): Map<string, IPackageJsonData>;
-    /**
-     * Is the passed in mod compatible with the running server version
-     * @param mod Mod to check compatibiltiy with AKI
-     * @returns True if compatible
-     */
+    protected getModsPackageData(mods: string[]): Record<string, IPackageJsonData>;
     protected isModCombatibleWithAki(mod: IPackageJsonData): boolean;
-    /**
-     * Execute each mod found in this.imported
-     * @param container Dependence container to give to mod when it runs
-     * @returns void promise
-     */
-    protected executeModsAsync(container: DependencyContainer): Promise<void>;
-    /**
-     * Read loadorder.json (create if doesnt exist) and return sorted list of mods
-     * @returns string array of sorted mod names
-     */
+    protected executeMods(container: DependencyContainer): Promise<void>;
     sortModsLoadOrder(): string[];
-    /**
-     * Compile mod and add into class property "imported"
-     * @param mod Name of mod to compile/add
-     */
-    protected addModAsync(mod: string, pkg: IPackageJsonData): Promise<void>;
-    /**
-     * Checks if a given mod should be loaded or skipped.
-     *
-     * @param pkg mod package.json data
-     * @returns
-     */
-    protected shouldSkipMod(pkg: IPackageJsonData): boolean;
-    protected autoInstallDependencies(modPath: string, pkg: IPackageJsonData): void;
-    protected areModDependenciesFulfilled(pkg: IPackageJsonData, loadedMods: Map<string, IPackageJsonData>): boolean;
-    protected isModCompatible(mod: IPackageJsonData, loadedMods: Map<string, IPackageJsonData>): boolean;
+    protected addMod(mod: string): Promise<void>;
+    protected areModDependenciesFulfilled(pkg: IPackageJsonData, loadedMods: Record<string, IPackageJsonData>): boolean;
+    protected isModCompatible(mod: IPackageJsonData, loadedMods: Record<string, IPackageJsonData>): boolean;
     /**
      * Validate a mod passes a number of checks
      * @param modName name of mod in /mods/ to validate
      * @returns true if valid
      */
     protected validMod(modName: string): boolean;
+    protected getLoadOrderRecursive(mod: string, result: Record<string, string>, visited: Record<string, string>): void;
+    protected getLoadOrder(mods: Record<string, IPackageJsonData>): Record<string, string>;
     getContainer(): DependencyContainer;
 }

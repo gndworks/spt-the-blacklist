@@ -20,5 +20,4 @@ export interface Requirement {
     areaType?: number;
     requiredLevel?: number;
     resource?: number;
-    questId?: string;
 }
