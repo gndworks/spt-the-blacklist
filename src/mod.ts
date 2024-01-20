@@ -36,7 +36,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
   // We to adjust for pricing using a baseline when mods like SPT Realism are used
   private baselineBullet: ITemplateItem;
-  private baselineArmour: ITemplateItem;
 
   // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
   private attachmentCategoryIds: string[] = [];
@@ -57,7 +56,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = advancedConfig.useTraderPriceForOffersIfHigher != null ? advancedConfig.useTraderPriceForOffersIfHigher : true;
 
     this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
-    this.baselineArmour = itemTable[advancedConfig.baselineArmourId];
 
     let blacklistedItemsUpdatedCount = 0;
     let nonBlacklistedItemsUpdatedCount = 0;
@@ -171,14 +169,11 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
   }
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
-    // Note that this price can be affected by other mods like Lua's market updater.
     const currentFleaPrice = prices[item._id];
     let newPrice: number;
 
     if (this.isBulletOrShotgunShell(item)) {
       newPrice = this.getUpdatedAmmoPrice(item);
-    } else if (this.isArmour(item)) {
-      newPrice = this.getUpdatedArmourPrice(item);
     } else if (this.isGun(item) && currentFleaPrice == null) {
       newPrice = this.getFallbackGunPrice();
     }
@@ -191,10 +186,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
   private isBulletOrShotgunShell(item: ITemplateItem): boolean {
     const props = item._props;
     return props.ammoType === "bullet" || props.ammoType === "buckshot";
-  }
-
-  private isArmour(item: ITemplateItem): boolean {
-    return Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")
   }
 
   // Some blacklisted guns are very cheap because they don't have a flea price, just a handbook price. The ones listed below will get a much higher default price.
@@ -232,22 +223,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     const damageMultiplier = baseDamageMultiplier + (1 - baseDamageMultiplier) * advancedConfig.bulletDamageMultiplierRedutionFactor; 
 
     return advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * config.blacklistedAmmoAdditionalPriceMultiplier;
-  }
-
-  // Some default armour prices are too high like the Zabralo so I want a more balanced way to calculate the price.
-  private getUpdatedArmourPrice(item: ITemplateItem) {
-    const baselineArmourClass = Number(this.baselineArmour._props.armorClass);
-
-    // Instead of doing a simple multiplier by dividing the two armour classes, this will give us a much bigger price range for different tiered armours.
-    const armourClassCost = (Number(item._props.armorClass) - baselineArmourClass) * advancedConfig.pricePerArmourClassStep;
-    const baseArmourWeightMultiplier = advancedConfig.baselineArmourWeight / item._props.Weight;
-
-    // Reduces the effect of the weight multiplier so some lighter armour aren't super expensive.
-    // Eg. let baseArmourWeightMultiplier = 2 & armourWeightMultiplierReductionFactor = 0.7. Instead of a 2x price when an armour is half as light as the baseline, we instead get:
-    // 2 + (1 - 2) * 0.7 = 2 - 0.7 = 1.3x the price.
-    const armourWeightMultiplier = baseArmourWeightMultiplier + (1 - baseArmourWeightMultiplier) * advancedConfig.armourWeightMultiplierReductionFactor;
-
-    return (advancedConfig.baselineArmourPrice + armourClassCost) * armourWeightMultiplier * config.blacklistedArmourAdditionalPriceMultiplier;
   }
 
   private getFallbackGunPrice() {
