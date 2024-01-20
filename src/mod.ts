@@ -18,20 +18,18 @@
 import { DependencyContainer } from "tsyringe";
 
 import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod";
+import { IPostDBLoadModAsync } from "@spt-aki/models/external/IPostDBLoadModAsync";
 import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
 import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
-import { RagfairOfferGenerator } from "@spt-aki/generators/RagfairOfferGenerator";
-import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
 import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
 
-class TheBlacklistMod implements IPostDBLoadMod {
+class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
 
   private modName = "[The Blacklist]";
@@ -43,22 +41,13 @@ class TheBlacklistMod implements IPostDBLoadMod {
   // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
   private attachmentCategoryIds: string[] = [];
 
-  public postDBLoad(container: DependencyContainer): void {
+  public async postDBLoadAsync(container: DependencyContainer) {
     this.logger = container.resolve<ILogger>("WinstonLogger");
 
-    // Easiest way to make mod compatible with Lua's flea updater is let the user choose when to load the mod...
-    setTimeout(() => this.initialiseMod(container), (advancedConfig.startDelayInSeconds || 7) * 1000);
-  }
-
-  private initialiseMod(
-    container: DependencyContainer
-  ): void {
     const databaseServer = container.resolve<DatabaseServer>("DatabaseServer");
     const tables = databaseServer.getTables();
     const configServer = container.resolve<ConfigServer>("ConfigServer");
     const ragfairConfig = configServer.getConfig<IRagfairConfig>(ConfigTypes.RAGFAIR);
-    const ragfairPriceService = container.resolve<RagfairPriceService>("RagfairPriceService");
-    const ragfairOfferGenerator = container.resolve<RagfairOfferGenerator>("RagfairOfferGenerator");
 
     const itemTable = tables.templates.items;
     const handbookItems = tables.templates.handbook.Items;
@@ -153,17 +142,13 @@ class TheBlacklistMod implements IPostDBLoadMod {
       prices[item._id] *= itemSpecificPriceMultiplier;
     });
 
-    // Typescript hack to call protected method
-    (ragfairPriceService as any).generateDynamicPrices();
-    ragfairOfferGenerator.generateDynamicOffers().then(() => {
-      this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
-      if (config.limitMaxPriceOfAttachments) {
-        this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
-      }
-      if (config.useBalancedPricingForAllAmmo) {
-        this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
-      }
-    });
+    this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
+    if (config.limitMaxPriceOfAttachments) {
+      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
+    }
+    if (config.useBalancedPricingForAllAmmo) {
+      this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
+    }
   }
 
   private initialiseAttachmentCategoryIds(handbookCategories: Category[]) {
