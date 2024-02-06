@@ -47,9 +47,9 @@ export function isBulletOrShotgunShell(item: ITemplateItem): boolean {
   return props.ammoType === "bullet" || props.ammoType === "buckshot";
 }
 
-export function getUpdatedAmmoPrice(item: ITemplateItem): number {
-  const baselinePen = this.baselineBullet._props.PenetrationPower;
-  const baselineDamage = this.baselineBullet._props.Damage;
+export function getUpdatedAmmoPrice(item: ITemplateItem, baselineBullet: ITemplateItem): number {
+  const baselinePen = baselineBullet._props.PenetrationPower;
+  const baselineDamage = baselineBullet._props.Damage;
 
   const basePenetrationMultiplier = item._props.PenetrationPower / baselinePen;
   const baseDamageMultiplier = item._props.Damage / baselineDamage;

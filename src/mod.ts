@@ -172,7 +172,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       return;
     }
 
-    const newPrice = getUpdatedAmmoPrice(item);
+    const newPrice = getUpdatedAmmoPrice(item, this.baselineBullet);
     prices[item._id] = newPrice;
 
     if (!itemProps.CanSellOnRagfair) {
