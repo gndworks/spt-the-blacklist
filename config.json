@@ -5,7 +5,6 @@
   "maxFleaPriceOfAttachmentsToHandbookPrice": 5,
   "blacklistedItemPriceMultiplier": 1,
   "blacklistedAmmoAdditionalPriceMultiplier": 1,
-  "blacklistedArmourAdditionalPriceMultiplier": 1,
   "customItemConfigs": [
     {
       "itemIdHint": "Just a human friendly description that isn't used in code to help you remember. This item is the .338 AP round",
