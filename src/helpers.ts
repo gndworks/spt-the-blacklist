@@ -34,7 +34,7 @@ export function getAttachmentCategoryIds(handbookCategories: Category[]): string
 function getChildCategoriesRecursively(handbookCategories: Category[], parentId: string): Category[] {
   const childCategories = handbookCategories.filter(category => category.ParentId === parentId);
   const grandChildrenCategories = childCategories.reduce(
-    (memo, category) => memo.concat(this.getChildCategoriesRecursively(handbookCategories, category.Id)), 
+    (memo, category) => memo.concat(getChildCategoriesRecursively(handbookCategories, category.Id)), 
     []
   );
 
