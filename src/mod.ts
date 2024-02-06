@@ -24,7 +24,7 @@ import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
 import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
-import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
+import { Category, HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
@@ -42,6 +42,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
   private attachmentCategoryIds: string[] = [];
 
   private blacklistedItemsUpdatedCount = 0;
+  private attachmentPriceLimitedCount = 0;
 
   public async postDBLoadAsync(container: DependencyContainer) {
     this.logger = container.resolve<ILogger>("WinstonLogger");
@@ -62,7 +63,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
     let nonBlacklistedItemsUpdatedCount = 0;
     let ammoPricesUpdatedCount = 0;
-    let attachmentPriceLimitedCount = 0;
 
     if (config.limitMaxPriceOfAttachments) {
       this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
@@ -71,7 +71,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
-      
       const originalPrice = prices[item._id];
 
       // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
@@ -80,15 +79,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       }
 
       if (config.limitMaxPriceOfAttachments && this.attachmentCategoryIds.includes(handbookItem.ParentId)) {
-        const handbookPrice = handbookItem.Price;
-        const existingFleaPrice = prices[item._id];
-        const maxFleaPrice = handbookPrice * config.maxFleaPriceOfAttachmentsToHandbookPrice;
-        
-        if (existingFleaPrice > maxFleaPrice) {
-          prices[item._id] = maxFleaPrice;
-          attachmentPriceLimitedCount++;
-          this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
-        }
+        this.updateAttachmentPrice(handbookItem, item, prices);
       }
 
       const itemProps = item._props;
@@ -134,7 +125,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
     this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
     if (config.limitMaxPriceOfAttachments) {
-      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
+      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${this.attachmentPriceLimitedCount} flea prices of attachments.`);
     }
     if (config.useBalancedPricingForAllAmmo) {
       this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
@@ -172,6 +163,20 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
 
     return false;
+  }
+
+  private updateAttachmentPrice(handbookItem: HandbookItem, item: ITemplateItem, prices: Record<string, number>) {
+    const handbookPrice = handbookItem.Price;
+    const existingFleaPrice = prices[item._id];
+    const maxFleaPrice = handbookPrice * config.maxFleaPriceOfAttachmentsToHandbookPrice;
+    
+    if (existingFleaPrice > maxFleaPrice) {
+      prices[item._id] = maxFleaPrice;
+
+      this.attachmentPriceLimitedCount++;
+
+      this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
+    }
   }
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
