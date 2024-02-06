@@ -47,18 +47,6 @@ export function isBulletOrShotgunShell(item: ITemplateItem): boolean {
   return props.ammoType === "bullet" || props.ammoType === "buckshot";
 }
 
-// Some blacklisted guns are very cheap because they don't have a flea price, just a handbook price. The ones listed below will get a much higher default price.
-export function isGun(item: ITemplateItem): boolean {
-  const marksmanRiflesItemCategoryId = "5447b6194bdc2d67278b4567";
-  const assaultRiflesItemCategoryId = "5447b5f14bdc2d61278b4567";
-  const sniperRiflesItemCategoryId = "5447b6254bdc2dc3278b4568";
-  const smgsItemCategoryId = "5447b5e04bdc2d62278b4567";
-  const carbinesItemCategoryId = "5447b5fc4bdc2d87278b4567";
-  const gunCategories = [marksmanRiflesItemCategoryId, assaultRiflesItemCategoryId, sniperRiflesItemCategoryId, smgsItemCategoryId, carbinesItemCategoryId];
-
-  return gunCategories.includes(item._parent);
-}
-
 export function getUpdatedAmmoPrice(item: ITemplateItem): number {
   const baselinePen = this.baselineBullet._props.PenetrationPower;
   const baselineDamage = this.baselineBullet._props.Damage;
@@ -82,8 +70,4 @@ export function getUpdatedAmmoPrice(item: ITemplateItem): number {
   const damageMultiplier = baseDamageMultiplier + (1 - baseDamageMultiplier) * advancedConfig.bulletDamageMultiplierRedutionFactor; 
 
   return advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * config.blacklistedAmmoAdditionalPriceMultiplier;
-}
-
-export function getFallbackGunPrice(): number {
-  return advancedConfig.gunPriceFallback || 100000;
 }

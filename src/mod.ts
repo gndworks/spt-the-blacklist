@@ -24,11 +24,11 @@ import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
 import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
-import { Category, HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
+import { HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
-import { getAttachmentCategoryIds, getFallbackGunPrice, getUpdatedAmmoPrice, isBulletOrShotgunShell, isGun } from "./helpers";
+import { getAttachmentCategoryIds, getUpdatedAmmoPrice, isBulletOrShotgunShell } from "./helpers";
 
 class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
@@ -95,7 +95,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
           return;
         }
 
-        prices[item._id] = this.getUpdatedPrice(item, prices);
+        prices[item._id] = this.getUpdatedPrice(handbookItem, item, prices);
 
         if (!prices[item._id]) {
           this.debug(`There are no flea prices for ${item._id} - ${item._name}!`);
@@ -106,8 +106,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
         this.blacklistedItemsUpdatedCount++;
       }
-
-      
     });
 
     this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${this.nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
@@ -186,19 +184,15 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     this.ammoPricesUpdatedCount++;
   }
 
-  private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
-    const currentFleaPrice = prices[item._id];
-    let newPrice: number;
+  private getUpdatedPrice(handbookItem: HandbookItem, item: ITemplateItem, prices: Record<string, number>): number | undefined {
+    // If a flea price doesn't exist for an item, we can multiply its handbook price which usually exists.
+    if (prices[item._id] == null) {
+      const handbookPrice = handbookItem.Price;
 
-    if (isBulletOrShotgunShell(item)) {
-      newPrice = getUpdatedAmmoPrice(item);
-    } else if (isGun(item) && currentFleaPrice == null) {
-      newPrice = getFallbackGunPrice();
+      return handbookPrice * advancedConfig.handbookPriceMultiplier;
     }
 
-    // Avoids NaN. Also we shouldn't have any prices of 0.
-    const price = newPrice || currentFleaPrice;
-    return price && price * config.blacklistedItemPriceMultiplier;
+    return prices[item._id] * config.blacklistedItemPriceMultiplier;
   }
 
   private debug(message: string) {
