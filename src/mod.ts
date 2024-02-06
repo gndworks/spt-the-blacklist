@@ -28,6 +28,7 @@ import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import config from "../config.json";
 import advancedConfig from "../advancedConfig.json";
+import { getAttachmentCategoryIds } from "./helpers";
 
 class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
@@ -63,7 +64,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     let attachmentPriceLimitedCount = 0;
 
     if (config.limitMaxPriceOfAttachments) {
-      this.initialiseAttachmentCategoryIds(tables.templates.handbook.Categories);
+      this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
     }
 
     // Find all items to update by looping through handbook which is a better indicator of useable items.
@@ -149,24 +150,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
   }
 
-  private initialiseAttachmentCategoryIds(handbookCategories: Category[]) {
-    const weaponPartsAndModsId = "5b5f71a686f77447ed5636ab";
-    const weaponPartsChildrenCategories = this.getChildCategoriesRecursively(handbookCategories, weaponPartsAndModsId);
-    const childrenIds = weaponPartsChildrenCategories.map(category => category.Id);
-
-    this.attachmentCategoryIds.push(weaponPartsAndModsId);
-    this.attachmentCategoryIds = this.attachmentCategoryIds.concat(childrenIds);
-  }
-
-  private getChildCategoriesRecursively(handbookCategories: Category[], parentId: string): Category[] {
-    const childCategories = handbookCategories.filter(category => category.ParentId === parentId);
-    const grandChildrenCategories = childCategories.reduce(
-      (memo, category) => memo.concat(this.getChildCategoriesRecursively(handbookCategories, category.Id)), 
-      []
-    );
-  
-    return childCategories.concat(grandChildrenCategories);
-  }
+ 
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
     const currentFleaPrice = prices[item._id];
