@@ -41,6 +41,8 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
   // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
   private attachmentCategoryIds: string[] = [];
 
+  private blacklistedItemsUpdatedCount = 0;
+
   public async postDBLoadAsync(container: DependencyContainer) {
     this.logger = container.resolve<ILogger>("WinstonLogger");
 
@@ -58,7 +60,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
     this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
 
-    let blacklistedItemsUpdatedCount = 0;
     let nonBlacklistedItemsUpdatedCount = 0;
     let ammoPricesUpdatedCount = 0;
     let attachmentPriceLimitedCount = 0;
@@ -70,20 +71,11 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
-      const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
+      
       const originalPrice = prices[item._id];
 
       // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
-      if (customItemConfig?.fleaPriceOverride) {
-        prices[item._id] = customItemConfig.fleaPriceOverride;
-        this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
-        blacklistedItemsUpdatedCount++;
-        return;
-      }
-
-      if (customItemConfig?.blacklisted) {
-        this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
-        ragfairConfig.dynamic.blacklist.custom.push(item._id);
+      if (this.updateItemUsingCustomItemConfig(item, prices, originalPrice, ragfairConfig)) {
         return;
       }
 
@@ -106,7 +98,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
         prices[item._id] = newPrice;
         
         if (!itemProps.CanSellOnRagfair) {
-          blacklistedItemsUpdatedCount++;
+          this.blacklistedItemsUpdatedCount++;
           // Set to true so we avoid recalculating ammo price again for blacklisted ammo below.
           itemProps.CanSellOnRagfair = true;
         } else {
@@ -134,14 +126,13 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
-        blacklistedItemsUpdatedCount++;
+        this.blacklistedItemsUpdatedCount++;
       }
 
-      const itemSpecificPriceMultiplier = customItemConfig?.priceMultiplier || 1;
-      prices[item._id] *= itemSpecificPriceMultiplier;
+      
     });
 
-    this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
+    this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
     if (config.limitMaxPriceOfAttachments) {
       this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
     }
@@ -150,7 +141,38 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
   }
 
- 
+  private updateItemUsingCustomItemConfig(item: ITemplateItem , prices: Record<string, number>, originalPrice: number, ragfairConfig: IRagfairConfig): boolean {
+    const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
+
+    if (!customItemConfig) {
+      return false;
+    }
+
+    if (customItemConfig?.blacklisted) {
+      this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
+
+      ragfairConfig.dynamic.blacklist.custom.push(item._id);
+
+      return true;
+    }
+
+    if (customItemConfig?.fleaPriceOverride) {
+      prices[item._id] = customItemConfig.fleaPriceOverride;
+
+      this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
+      this.blacklistedItemsUpdatedCount++;
+
+      return true;
+    }
+
+    if (!isNaN(customItemConfig?.priceMultiplier)) {
+      prices[item._id] *= customItemConfig.priceMultiplier;
+
+      return true;
+    }
+
+    return false;
+  }
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
     const currentFleaPrice = prices[item._id];
