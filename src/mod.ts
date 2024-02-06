@@ -43,6 +43,8 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
   private blacklistedItemsUpdatedCount = 0;
   private attachmentPriceLimitedCount = 0;
+  private nonBlacklistedItemsUpdatedCount = 0;
+  private ammoPricesUpdatedCount = 0;
 
   public async postDBLoadAsync(container: DependencyContainer) {
     this.logger = container.resolve<ILogger>("WinstonLogger");
@@ -60,9 +62,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = advancedConfig.useTraderPriceForOffersIfHigher != null ? advancedConfig.useTraderPriceForOffersIfHigher : true;
 
     this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
-
-    let nonBlacklistedItemsUpdatedCount = 0;
-    let ammoPricesUpdatedCount = 0;
 
     if (config.limitMaxPriceOfAttachments) {
       this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
@@ -84,18 +83,8 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
       const itemProps = item._props;
 
-      if (config.useBalancedPricingForAllAmmo && isBulletOrShotgunShell(item)) {
-        const newPrice = getUpdatedAmmoPrice(item);
-        prices[item._id] = newPrice;
-        
-        if (!itemProps.CanSellOnRagfair) {
-          this.blacklistedItemsUpdatedCount++;
-          // Set to true so we avoid recalculating ammo price again for blacklisted ammo below.
-          itemProps.CanSellOnRagfair = true;
-        } else {
-          nonBlacklistedItemsUpdatedCount++;
-        }
-        ammoPricesUpdatedCount++;
+      if (isBulletOrShotgunShell(item)) {
+        this.updateAmmoPrice(item, prices);
       }
 
       if (!itemProps.CanSellOnRagfair) {
@@ -105,8 +94,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
           this.debug(`Blacklisted item ${item._id} - ${item._name} because we are excluding handbook category ${handbookItem.ParentId}.`);
           return;
         }
-
-        itemProps.CanSellOnRagfair = config.disableBsgBlacklist;
 
         prices[item._id] = this.getUpdatedPrice(item, prices);
 
@@ -123,12 +110,12 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       
     });
 
-    this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
+    this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${this.nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
     if (config.limitMaxPriceOfAttachments) {
       this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${this.attachmentPriceLimitedCount} flea prices of attachments.`);
     }
     if (config.useBalancedPricingForAllAmmo) {
-      this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
+      this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${this.ammoPricesUpdatedCount} ammo prices.`);
     }
   }
 
@@ -177,6 +164,26 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
       this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
     }
+  }
+
+  private updateAmmoPrice(item: ITemplateItem, prices: Record<string, number>) {
+    const itemProps = item._props;
+
+    // We don't care about this standard ammo item if we haven't enabled useBalancedPricingForAllAmmo
+    if (itemProps.CanSellOnRagfair && !config.useBalancedPricingForAllAmmo) {
+      return;
+    }
+
+    const newPrice = getUpdatedAmmoPrice(item);
+    prices[item._id] = newPrice;
+
+    if (!itemProps.CanSellOnRagfair) {
+      this.blacklistedItemsUpdatedCount++;
+    } else {
+      this.nonBlacklistedItemsUpdatedCount++;
+    }
+
+    this.ammoPricesUpdatedCount++;
   }
 
   private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
