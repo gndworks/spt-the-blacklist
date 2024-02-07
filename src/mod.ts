@@ -77,8 +77,10 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       const item = itemTable[handbookItem.Id];
       const originalPrice = prices[item._id];
 
-      // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
-      if (this.updateItemUsingCustomItemConfig(item, prices, originalPrice, ragfairConfig)) {
+      const customItemConfig = this.config.customItemConfigs.find(conf => conf.itemId === item._id);
+
+      // We found a custom item config override to use. That's all we care about for this item. Move on to the next item.
+      if (customItemConfig && this.updateItemUsingCustomItemConfig(customItemConfig, item, prices, originalPrice, ragfairConfig)) {
         return;
       }
 
@@ -107,6 +109,10 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
           return;
         }
 
+        if (!isNaN(customItemConfig?.priceMultiplier)) {
+          prices[item._id] *= customItemConfig.priceMultiplier;
+        }
+
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
         this.blacklistedItemsUpdatedCount++;
@@ -122,13 +128,8 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
   }
 
-  private updateItemUsingCustomItemConfig(item: ITemplateItem , prices: Record<string, number>, originalPrice: number, ragfairConfig: IRagfairConfig): boolean {
-    const customItemConfig = this.config.customItemConfigs.find(conf => conf.itemId === item._id);
-
-    if (!customItemConfig) {
-      return false;
-    }
-
+  // Returns true if we updated something using the customItemConfig so we can skip to the next handbook item.
+  private updateItemUsingCustomItemConfig(customItemConfig, item: ITemplateItem , prices: Record<string, number>, originalPrice: number, ragfairConfig: IRagfairConfig): boolean {
     if (customItemConfig?.blacklisted) {
       this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
 
@@ -142,12 +143,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
       this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
       this.blacklistedItemsUpdatedCount++;
-
-      return true;
-    }
-
-    if (!isNaN(customItemConfig?.priceMultiplier)) {
-      prices[item._id] *= customItemConfig.priceMultiplier;
 
       return true;
     }
