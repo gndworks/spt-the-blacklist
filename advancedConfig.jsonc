@@ -1,9 +1,22 @@
 {
+  // Represents the M856A1 bullet which is a blacklist round that is good to balance the price of other ammos around.
   "baselineBulletId": "59e6906286f7746c9f75e847",
+
+  // The M856A1 will be 1000 roubles on the flea, better blacklisted rounds will be more expensive proportionally and worse rounds will be cheaper.
   "baselineBulletPrice": 1000,
+
+  // Reduces the weighting of the bullet damage against their flea price. So a blacklisted low pen, high dmg round won't be as expensive as better pen rounds.
   "bulletDamageMultiplierRedutionFactor": 0.7,
+
+  // When enabled, creates more logging, mostly for Platinum to debug things.
   "enableDebug": true,
+
+  // Items that are blacklisted in these categories will remain blacklisted.
   "excludedCategories": ["5b5f78b786f77447ed5636af", "5b47574386f77428ca22b33c"],
+
+  // By default, SPT flea prices will use a trader's price for an item if the trader's price is higher. Even custom item configs from this mod won't apply so you might need to disable this if you have some items set really cheap.
   "useTraderPriceForOffersIfHigher": true,
+
+  // When an item doesn't have a flea price because it was blacklisted by default, multiply the handbook price by this number to get the new flea price. Default 3.
   "handbookPriceMultiplier": 3
 }
