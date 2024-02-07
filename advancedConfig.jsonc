@@ -12,7 +12,12 @@
   "enableDebug": true,
 
   // Items that are blacklisted in these categories will remain blacklisted.
-  "excludedCategories": ["5b5f78b786f77447ed5636af", "5b47574386f77428ca22b33c"],
+  "excludedCategories": [
+    "5b5f78b786f77447ed5636af", // Money, dont want people buying roubles with roubles
+    "5b47574386f77428ca22b345", // Special equipment, dont want people buying lightkeeper items
+    "5b47574386f77428ca22b33c"  // Ammo boxes, some ammo boxes are really cheap, some are very expensive. Just buy loose rounds instead.
+  ],
+
 
   // By default, SPT flea prices will use a trader's price for an item if the trader's price is higher. Even custom item configs from this mod won't apply so you might need to disable this if you have some items set really cheap.
   "useTraderPriceForOffersIfHigher": true,
