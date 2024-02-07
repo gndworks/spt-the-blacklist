@@ -2,7 +2,7 @@
   "baselineBulletId": "59e6906286f7746c9f75e847",
   "baselineBulletPrice": 1000,
   "bulletDamageMultiplierRedutionFactor": 0.7,
-  "enableDebug": false,
+  "enableDebug": true,
   "excludedCategories": ["5b5f78b786f77447ed5636af", "5b47574386f77428ca22b33c"],
   "useTraderPriceForOffersIfHigher": true,
   "handbookPriceMultiplier": 3
