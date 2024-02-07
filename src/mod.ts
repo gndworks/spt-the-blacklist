@@ -98,7 +98,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
         // Some blacklisted items are hard to balance or just shouldn't be allowed so we will keep them blacklisted.
         if (this.advancedConfig.excludedCategories.some(category => category === handbookItem.ParentId)) {
           ragfairConfig.dynamic.blacklist.custom.push(item._id);
-          this.debug(`Blacklisted item ${item._id} - ${item._name} because we are excluding handbook category ${handbookItem.ParentId}.`);
+          this.debug(`Ignored item ${item._id} - ${item._name} because we are excluding handbook category ${handbookItem.ParentId}.`);
           return;
         }
 
@@ -135,6 +135,10 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
       ragfairConfig.dynamic.blacklist.custom.push(item._id);
 
+      if (item._props.CanSellOnRagfair) {
+        this.nonBlacklistedItemsUpdatedCount++
+      }
+
       return true;
     }
 
@@ -142,7 +146,10 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       prices[item._id] = customItemConfig.fleaPriceOverride;
 
       this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
-      this.blacklistedItemsUpdatedCount++;
+      
+      if (item._props.CanSellOnRagfair) {
+        this.nonBlacklistedItemsUpdatedCount++
+      }
 
       return true;
     }
