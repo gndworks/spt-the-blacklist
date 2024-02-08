@@ -36,12 +36,12 @@
       "fleaPriceOverride": 1500000
     },
     {
-      "itemIdHint": "Dogtag BEAR",
+      // Dogtag BEAR
       "itemId": "59f32bb586f774757e1e8442",
       "blacklisted": true
     },
     {
-      "itemIdHint": "Dogtag USEC",
+      // Dogtag USEC
       "itemId": "59f32c3b86f77472a31742f0",
       "blacklisted": true
     }
