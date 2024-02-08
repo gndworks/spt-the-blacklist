@@ -5,6 +5,9 @@
   // Make cheap offers sell faster. Default true.
   "enableFasterSales": true,
 
+  // Reduces the number of offers and quantities per offer to make the flea experience more hardcore. Highly recommend to enable but default is false.
+  "enableScarceOffers": true,
+
   // Limits the flea price of many attachments as these prices can be inflated heavily by Gunsmith tasks in Live Tarkov. Default true.
   "limitMaxPriceOfAttachments": true,
 

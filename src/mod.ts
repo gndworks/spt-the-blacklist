@@ -137,6 +137,19 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     if (this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
       ragfairConfig.runIntervalSeconds = this.advancedConfig.runIntervalSecondsOverride;
     }
+
+    if (this.config.enableScarceOffers) {
+      this.updateRagfairConfigToHaveScarceOffers(ragfairConfig);
+    }
+  }
+
+  private updateRagfairConfigToHaveScarceOffers(ragfairConfig: IRagfairConfig) {
+    const minMaxPropertiesToOverride = ["offerItemCount", "stackablePercent", "nonStackableCount"];
+
+    for (const propertyToOverride of minMaxPropertiesToOverride) {
+      ragfairConfig.dynamic[propertyToOverride].max = this.advancedConfig[`${propertyToOverride}Override`].max;
+      ragfairConfig.dynamic[propertyToOverride].min = this.advancedConfig[`${propertyToOverride}Override`].min;
+    }
   }
 
   // Returns true if we updated something using the customItemConfig so we can skip to the next handbook item.
