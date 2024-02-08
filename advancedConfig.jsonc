@@ -43,5 +43,8 @@
   "nonStackableCountOverride": {
     "max": 3,
     "min": 1
-  }
+  },
+
+  // Adds the specified amount of offers for your current flea market rating if config.addExtraOfferSlot is enabled.
+  "extraOfferSlotsToAdd": 1
 }

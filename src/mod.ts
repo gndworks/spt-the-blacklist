@@ -29,6 +29,7 @@ import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
 import { HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
 import { getAttachmentCategoryIds, isBulletOrShotgunShell } from "./helpers";
+import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
 
 class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
@@ -62,10 +63,12 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     const itemTable = tables.templates.items;
     const handbookItems = tables.templates.handbook.Items;
     const prices = tables.templates.prices;
+    const globals = tables.globals;
 
     this.baselineBullet = itemTable[this.advancedConfig.baselineBulletId];
 
     this.updateRagfairConfig(ragfairConfig);
+    this.updateGlobals(globals);
 
     if (this.config.limitMaxPriceOfAttachments) {
       this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
@@ -149,6 +152,16 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     for (const propertyToOverride of minMaxPropertiesToOverride) {
       ragfairConfig.dynamic[propertyToOverride].max = this.advancedConfig[`${propertyToOverride}Override`].max;
       ragfairConfig.dynamic[propertyToOverride].min = this.advancedConfig[`${propertyToOverride}Override`].min;
+    }
+  }
+
+  private updateGlobals(globals: IGlobals) {
+    const ragfairConfig = globals.config.RagFair;
+
+    if (this.config.addExtraOfferSlot) {
+      for (const settingForBracket of ragfairConfig.maxActiveOfferCount) {
+        settingForBracket.count += this.advancedConfig.extraOfferSlotsToAdd;
+      }
     }
   }
 
