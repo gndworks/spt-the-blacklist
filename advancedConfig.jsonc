@@ -23,5 +23,8 @@
   "useTraderPriceForOffersIfHigher": true,
 
   // When an item doesn't have a flea price because it was blacklisted by default, multiply the handbook price by this number to get the new flea price. Default 3.
-  "handbookPriceMultiplier": 3
+  "handbookPriceMultiplier": 3,
+
+  // Overrides ragfairConfig.runIntervalSeconds if config.enableFasterSales is true. Default 3s.
+  "runIntervalSecondsOverride": 3
 }

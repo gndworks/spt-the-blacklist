@@ -2,6 +2,9 @@
   // Main feature of the mod, set to true to disable blacklist, false to keep it enabled. Other parts of the mod still applies however. Default true.
   "disableBsgBlacklist": true,
 
+  // Make cheap offers sell faster. Default true.
+  "enableFasterSales": true,
+
   // Limits the flea price of many attachments as these prices can be inflated heavily by Gunsmith tasks in Live Tarkov. Default true.
   "limitMaxPriceOfAttachments": true,
 

@@ -65,8 +65,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
     this.baselineBullet = itemTable[this.advancedConfig.baselineBulletId];
 
-    ragfairConfig.dynamic.blacklist.enableBsgList = !this.config.disableBsgBlacklist;
-    ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = this.advancedConfig.useTraderPriceForOffersIfHigher != null ? this.advancedConfig.useTraderPriceForOffersIfHigher : true;
+    this.updateRagfairConfig(ragfairConfig);
 
     if (this.config.limitMaxPriceOfAttachments) {
       this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
@@ -125,6 +124,18 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
     if (this.config.useBalancedPricingForAllAmmo) {
       this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${this.ammoPricesUpdatedCount} ammo prices.`);
+    }
+  }
+
+  private updateRagfairConfig(ragfairConfig: IRagfairConfig) {
+    ragfairConfig.dynamic.blacklist.enableBsgList = !this.config.disableBsgBlacklist;
+
+    if (this.advancedConfig.useTraderPriceForOffersIfHigher != null) {
+      ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = !!this.advancedConfig.useTraderPriceForOffersIfHigher;
+    }
+
+    if (this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
+      ragfairConfig.runIntervalSeconds = this.advancedConfig.runIntervalSecondsOverride;
     }
   }
 
