@@ -236,11 +236,13 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     const baseDamageMultiplier = item._props.Damage / baselineDamage;
   
     let penetrationMultiplier: number;
-    if (basePenetrationMultiplier > 1) {
+
+    // We are checking for > 0.99 because we want the baseline bullet (mult of 1) to be close to its baseline price.
+    if (basePenetrationMultiplier > 0.99) {
       // A good gradient to make higher power rounds more expensive
-      penetrationMultiplier = 7 * basePenetrationMultiplier - 6;
+      penetrationMultiplier = 3 * basePenetrationMultiplier - 2;
     } else {
-      // Due to maths above, its really easy to go < 1. The baseline ammo is mid tier with a reasonable 1000 rouble each. Ammo weaker than this tend to be pretty crap so we'll make it much cheaper
+      // The baseline ammo is mid tier with a reasonable 1000 rouble each. Ammo weaker than this tend to be pretty crap so we'll make it much cheaper
       const newMultiplier = basePenetrationMultiplier * 0.7;
       penetrationMultiplier = newMultiplier < 0.1 ? 0.1 : newMultiplier;
     }
