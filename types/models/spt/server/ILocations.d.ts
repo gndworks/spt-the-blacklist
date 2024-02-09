@@ -1,6 +1,6 @@
-import { ILocationBase } from "../../eft/common/ILocationBase";
-import { ILooseLoot } from "../../eft/common/ILooseLoot";
-import { ILocationsBase } from "../../eft/common/tables/ILocationsBase";
+import { ILocationBase } from "@spt-aki/models/eft/common/ILocationBase";
+import { ILooseLoot } from "@spt-aki/models/eft/common/ILooseLoot";
+import { ILocationsBase } from "@spt-aki/models/eft/common/tables/ILocationsBase";
 export interface ILocations {
     bigmap?: ILocationData;
     develop?: ILocationData;
@@ -18,6 +18,8 @@ export interface ILocations {
     terminal?: ILocationData;
     town?: ILocationData;
     woods?: ILocationData;
+    sandbox?: ILocationData;
+    /** Holds a mapping of the linkages between locations on the UI */
     base?: ILocationsBase;
 }
 export interface ILocationData {

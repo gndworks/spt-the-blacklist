@@ -1,24 +1,29 @@
-import { DurabilityLimitsHelper } from "../helpers/DurabilityLimitsHelper";
-import { Item, Repairable, Upd } from "../models/eft/common/tables/IItem";
-import { ITemplateItem } from "../models/eft/common/tables/ITemplateItem";
-import { EquipmentFilters, IBotConfig } from "../models/spt/config/IBotConfig";
-import { ILogger } from "../models/spt/utils/ILogger";
-import { ConfigServer } from "../servers/ConfigServer";
-import { DatabaseServer } from "../servers/DatabaseServer";
-import { LocalisationService } from "../services/LocalisationService";
-import { JsonUtil } from "../utils/JsonUtil";
-import { RandomUtil } from "../utils/RandomUtil";
-import { ItemHelper } from "./ItemHelper";
+import { ApplicationContext } from "@spt-aki/context/ApplicationContext";
+import { DurabilityLimitsHelper } from "@spt-aki/helpers/DurabilityLimitsHelper";
+import { ItemHelper } from "@spt-aki/helpers/ItemHelper";
+import { Item, Repairable, Upd } from "@spt-aki/models/eft/common/tables/IItem";
+import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
+import { IChooseRandomCompatibleModResult } from "@spt-aki/models/spt/bots/IChooseRandomCompatibleModResult";
+import { EquipmentFilters, IBotConfig, IRandomisedResourceValues } from "@spt-aki/models/spt/config/IBotConfig";
+import { IPmcConfig } from "@spt-aki/models/spt/config/IPmcConfig";
+import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
+import { ConfigServer } from "@spt-aki/servers/ConfigServer";
+import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
+import { LocalisationService } from "@spt-aki/services/LocalisationService";
+import { JsonUtil } from "@spt-aki/utils/JsonUtil";
+import { RandomUtil } from "@spt-aki/utils/RandomUtil";
 export declare class BotGeneratorHelper {
     protected logger: ILogger;
     protected randomUtil: RandomUtil;
     protected databaseServer: DatabaseServer;
     protected durabilityLimitsHelper: DurabilityLimitsHelper;
     protected itemHelper: ItemHelper;
+    protected applicationContext: ApplicationContext;
     protected localisationService: LocalisationService;
     protected configServer: ConfigServer;
     protected botConfig: IBotConfig;
-    constructor(logger: ILogger, randomUtil: RandomUtil, databaseServer: DatabaseServer, durabilityLimitsHelper: DurabilityLimitsHelper, itemHelper: ItemHelper, localisationService: LocalisationService, configServer: ConfigServer);
+    protected pmcConfig: IPmcConfig;
+    constructor(logger: ILogger, randomUtil: RandomUtil, databaseServer: DatabaseServer, durabilityLimitsHelper: DurabilityLimitsHelper, itemHelper: ItemHelper, applicationContext: ApplicationContext, localisationService: LocalisationService, configServer: ConfigServer);
     /**
      * Adds properties to an item
      * e.g. Repairable / HasHinge / Foldable / MaxDurability
@@ -29,6 +34,13 @@ export declare class BotGeneratorHelper {
     generateExtraPropertiesForItem(itemTemplate: ITemplateItem, botRole?: string): {
         upd?: Upd;
     };
+    /**
+     * Randomize the HpResource for bots e.g (245/400 resources)
+     * @param maxResource Max resource value of medical items
+     * @param randomizationValues Value provided from config
+     * @returns Randomized value from maxHpResource
+     */
+    protected getRandomizedResourceValue(maxResource: number, randomizationValues: IRandomisedResourceValues): number;
     /**
      * Get the chance for the weapon attachment or helmet equipment to be set as activated
      * @param botRole role of bot with weapon/helmet
@@ -51,17 +63,15 @@ export declare class BotGeneratorHelper {
      * @returns Repairable object
      */
     protected generateArmorRepairableProperties(itemTemplate: ITemplateItem, botRole: string): Repairable;
+    isWeaponModIncompatibleWithCurrentMods(itemsEquipped: Item[], tplToCheck: string, modSlot: string): IChooseRandomCompatibleModResult;
     /**
      * Can item be added to another item without conflict
-     * @param items Items to check compatibilities with
+     * @param itemsEquipped Items to check compatibilities with
      * @param tplToCheck Tpl of the item to check for incompatibilities
      * @param equipmentSlot Slot the item will be placed into
      * @returns false if no incompatibilities, also has incompatibility reason
      */
-    isItemIncompatibleWithCurrentItems(items: Item[], tplToCheck: string, equipmentSlot: string): {
-        incompatible: boolean;
-        reason: string;
-    };
+    isItemIncompatibleWithCurrentItems(itemsEquipped: Item[], tplToCheck: string, equipmentSlot: string): IChooseRandomCompatibleModResult;
     /**
      * Convert a bots role to the equipment role used in config/bot.json
      * @param botRole Role to convert
