@@ -11,12 +11,6 @@
   // Adds an extra offer for your current flea market rating bracket. So a new account at level 15 can create 3 offers instead of 2. Default is false. Extra amount is configurable in advancedConfigs.
   "addExtraOfferSlot": true,
 
-  // Limits the flea price of many attachments as these prices can be inflated heavily by Gunsmith tasks in Live Tarkov. Default true.
-  "limitMaxPriceOfAttachments": true,
-
-  // If above is true, this is the max ratio of the flea price to the handbook price (generally double the trader sell price). Default 5.
-  "maxFleaPriceOfAttachmentsToHandbookPrice": 5,
-
   // Balances the flea price of all ammo types, not just the blacklisted ammo types. Can be useful if you find some ammo prices are unbalanced, this generally makes them very balanced for what they do. Default false.
   "useBalancedPricingForAllAmmo": false,
 

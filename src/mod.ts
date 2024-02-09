@@ -28,7 +28,7 @@ import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
 import { HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
-import { getAttachmentCategoryIds, isBulletOrShotgunShell } from "./helpers";
+import { isBulletOrShotgunShell } from "./helpers";
 import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
 
 class TheBlacklistMod implements IPostDBLoadModAsync {
@@ -39,11 +39,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
   // We to adjust for pricing using a baseline when mods like SPT Realism are used
   private baselineBullet: ITemplateItem;
 
-  // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
-  private attachmentCategoryIds: string[] = [];
-
   private blacklistedItemsUpdatedCount = 0;
-  private attachmentPriceLimitedCount = 0;
   private nonBlacklistedItemsUpdatedCount = 0;
   private ammoPricesUpdatedCount = 0;
 
@@ -70,10 +66,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     this.updateRagfairConfig(ragfairConfig);
     this.updateGlobals(globals);
 
-    if (this.config.limitMaxPriceOfAttachments) {
-      this.attachmentCategoryIds = getAttachmentCategoryIds(tables.templates.handbook.Categories);
-    }
-
     // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
@@ -84,10 +76,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       // We found a custom item config override to use. That's all we care about for this item. Move on to the next item.
       if (customItemConfig && this.updateItemUsingCustomItemConfig(customItemConfig, item, prices, originalPrice, ragfairConfig)) {
         return;
-      }
-
-      if (this.config.limitMaxPriceOfAttachments && this.attachmentCategoryIds.includes(handbookItem.ParentId)) {
-        this.updateAttachmentPrice(handbookItem, item, prices);
       }
 
       const itemProps = item._props;
@@ -122,9 +110,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     });
 
     this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${this.nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
-    if (this.config.limitMaxPriceOfAttachments) {
-      this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${this.attachmentPriceLimitedCount} flea prices of attachments.`);
-    }
+    
     if (this.config.useBalancedPricingForAllAmmo) {
       this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${this.ammoPricesUpdatedCount} ammo prices.`);
     }
@@ -195,20 +181,6 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
 
     return false;
-  }
-
-  private updateAttachmentPrice(handbookItem: HandbookItem, item: ITemplateItem, prices: Record<string, number>) {
-    const handbookPrice = handbookItem.Price;
-    const existingFleaPrice = prices[item._id];
-    const maxFleaPrice = handbookPrice * this.config.maxFleaPriceOfAttachmentsToHandbookPrice;
-    
-    if (existingFleaPrice > maxFleaPrice) {
-      prices[item._id] = maxFleaPrice;
-
-      this.attachmentPriceLimitedCount++;
-
-      this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
-    }
   }
 
   private updateAmmoPrice(item: ITemplateItem, prices: Record<string, number>) {
