@@ -153,6 +153,9 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       ragfairConfig.dynamic[propertyToOverride].max = this.advancedConfig[`${propertyToOverride}Override`].max;
       ragfairConfig.dynamic[propertyToOverride].min = this.advancedConfig[`${propertyToOverride}Override`].min;
     }
+
+    ragfairConfig.dynamic.barter.chancePercent = 0;
+    ragfairConfig.dynamic.pack.chancePercent = 0;
   }
 
   private updateGlobals(globals: IGlobals) {
