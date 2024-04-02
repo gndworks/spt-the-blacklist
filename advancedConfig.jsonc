@@ -29,8 +29,8 @@
 
   // When config.enableScarceOffers is true, use these values to limit the number of offers on the flea.
   "offerItemCountOverride": {
-    "max": 3,
-    "min": 1
+    "max": 4,
+    "min": 2
   },
 
   // When config.enableScarceOffers is true, use these values to limit the quantity of a stackable item (like ammo) per offer on the flea.
@@ -41,7 +41,7 @@
 
   // When config.enableScarceOffers is true, use these values to limit the quantity of a non-stackable item (most items) per offer on the flea.
   "nonStackableCountOverride": {
-    "max": 3,
+    "max": 2,
     "min": 1
   },
 
