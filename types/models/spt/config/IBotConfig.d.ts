@@ -14,8 +14,6 @@ export interface IBotConfig extends IBaseConfig {
     durability: IBotDurability;
     /** Controls the percentage values of randomization item resources */
     lootItemResourceRandomization: Record<string, IRandomisedResourceDetails>;
-    /** Control the weighting of how expensive an average loot item is on a PMC or Scav */
-    lootNValue: LootNvalue;
     /** Control what bots are added to a bots revenge list key: bottype, value: bottypes to revenge on seeing their death */
     revenge: Record<string, string[]>;
     /** Control how many items are allowed to spawn on a bot
@@ -37,6 +35,10 @@ export interface IBotConfig extends IBaseConfig {
     secureContainerAmmoStackCount: number;
     /** Bot roles in this array will be given a dog tag on generation */
     botRolesWithDogTags: string[];
+    /** Settings to control the items that get added into wallets on bots */
+    walletLoot: IWalletLootSettings;
+    /** Currency weights, Keyed by botrole / currency */
+    currencyStackSize: Record<string, Record<string, Record<string, number>>>;
 }
 /** Number of bots to generate and store in cache on raid start per bot type */
 export interface PresetBatch {
@@ -77,9 +79,14 @@ export interface PresetBatch {
     sptUsec: number;
     sptBear: number;
 }
-export interface LootNvalue {
-    scav: number;
-    pmc: number;
+export interface IWalletLootSettings {
+    /** Chance wallets have loot in them */
+    chancePercent: number;
+    itemCount: MinMax;
+    stackSizeWeight: Record<string, number>;
+    currencyWeight: Record<string, number>;
+    /** What wallets will have money in them */
+    walletTplPool: string[];
 }
 export interface EquipmentFilters {
     /** Limits for mod types per weapon .e.g. scopes */

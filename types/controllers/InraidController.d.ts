@@ -13,7 +13,10 @@ import { ISaveProgressRequestData } from "@spt-aki/models/eft/inRaid/ISaveProgre
 import { PlayerRaidEndState } from "@spt-aki/models/enums/PlayerRaidEndState";
 import { IAirdropConfig } from "@spt-aki/models/spt/config/IAirdropConfig";
 import { IBTRConfig } from "@spt-aki/models/spt/config/IBTRConfig";
+import { IHideoutConfig } from "@spt-aki/models/spt/config/IHideoutConfig";
 import { IInRaidConfig } from "@spt-aki/models/spt/config/IInRaidConfig";
+import { ILocationConfig } from "@spt-aki/models/spt/config/ILocationConfig";
+import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ITraderConfig } from "@spt-aki/models/spt/config/ITraderConfig";
 import { ITraderServiceModel } from "@spt-aki/models/spt/services/ITraderServiceModel";
 import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
@@ -56,6 +59,9 @@ export declare class InraidController {
     protected btrConfig: IBTRConfig;
     protected inRaidConfig: IInRaidConfig;
     protected traderConfig: ITraderConfig;
+    protected locationConfig: ILocationConfig;
+    protected ragfairConfig: IRagfairConfig;
+    protected hideoutConfig: IHideoutConfig;
     constructor(logger: ILogger, saveServer: SaveServer, jsonUtil: JsonUtil, timeUtil: TimeUtil, databaseServer: DatabaseServer, pmcChatResponseService: PmcChatResponseService, matchBotDetailsCacheService: MatchBotDetailsCacheService, questHelper: QuestHelper, itemHelper: ItemHelper, profileHelper: ProfileHelper, playerScavGenerator: PlayerScavGenerator, healthHelper: HealthHelper, traderHelper: TraderHelper, traderServicesService: TraderServicesService, insuranceService: InsuranceService, inRaidHelper: InRaidHelper, applicationContext: ApplicationContext, configServer: ConfigServer, mailSendService: MailSendService, randomUtil: RandomUtil);
     /**
      * Save locationId to active profiles inraid object AND app context
@@ -105,6 +111,20 @@ export declare class InraidController {
      */
     protected savePlayerScavProgress(sessionID: string, postRaidRequest: ISaveProgressRequestData): void;
     /**
+     * merge two dictionaries together
+     * Prioritise pair that has true as a value
+     * @param primary main dictionary
+     * @param secondary Secondary dictionary
+     */
+    protected mergePmcAndScavEncyclopedias(primary: IPmcData, secondary: IPmcData): void;
+    /**
+     * Post-scav-raid any charisma increase must be propigated into PMC profile
+     * @param postRaidServerScavProfile Scav profile after adjustments made from raid
+     * @param postRaidServerPmcProfile Pmc profile after raid
+     * @param preRaidScavCharismaProgress charisma progress value pre-raid
+     */
+    protected updatePmcCharismaSkillPostScavRaid(postRaidServerScavProfile: IPmcData, postRaidServerPmcProfile: IPmcData, preRaidScavCharismaProgress: number): void;
+    /**
      * Does provided profile contain any condition counters
      * @param profile Profile to check for condition counters
      * @returns Profile has condition counters
@@ -140,8 +160,9 @@ export declare class InraidController {
      * Update profile with scav karma values based on in-raid actions
      * @param pmcData Pmc profile
      * @param offraidData Post-raid save request
+     * @param scavData Scav profile
      */
-    protected handlePostRaidPlayerScavKarmaChanges(pmcData: IPmcData, offraidData: ISaveProgressRequestData): void;
+    protected handlePostRaidPlayerScavKarmaChanges(pmcData: IPmcData, offraidData: ISaveProgressRequestData, scavData: IPmcData): void;
     /**
      * Get the inraid config from configs/inraid.json
      * @returns InRaid Config
@@ -166,4 +187,6 @@ export declare class InraidController {
      * Handle singleplayer/traderServices/itemDelivery
      */
     itemDelivery(sessionId: string, traderId: string, items: Item[]): void;
+    getTraitorScavHostileChance(url: string, sessionID: string): number;
+    getSandboxMaxPatrolValue(url: string, sessionID: string): number;
 }

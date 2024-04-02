@@ -158,6 +158,13 @@ export declare class RagfairOfferHelper {
      */
     protected passesSearchFilterCriteria(searchRequest: ISearchRequestData, offer: IRagfairOffer, pmcData: IPmcData): boolean;
     /**
+     * Check that the passed in offer item is functional
+     * @param offerRootItem The root item of the offer
+     * @param offer The flea offer
+     * @returns True if the given item is functional
+     */
+    isItemFunctional(offerRootItem: Item, offer: IRagfairOffer): boolean;
+    /**
      * Should a ragfair offer be visible to the player
      * @param searchRequest Search request
      * @param itemsToAdd ?

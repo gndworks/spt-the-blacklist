@@ -40,6 +40,7 @@ export interface IConfig {
     BaseLoadTime: number;
     BaseUnloadTime: number;
     BaseCheckTime: number;
+    BluntDamageReduceFromSoftArmorMod: number;
     Customization: ICustomization;
     UncheckOnShot: boolean;
     BotsEnabled: boolean;
@@ -682,6 +683,7 @@ export interface IBodyPartsSetting {
     Minimum: number;
     Maximum: number;
     Default: number;
+    EnvironmentDamageMultiplier: number;
     OverDamageReceivedMultiplier: number;
 }
 export interface IHealthFactorsSettings {

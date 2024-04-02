@@ -1,9 +1,11 @@
 import { MinMax } from "@spt-aki/models/common/MinMax";
-import { IBaseConfig } from "@spt-aki/models/spt/config/IBaseConfig";
+import { IBaseConfig, IRunIntervalValues } from "@spt-aki/models/spt/config/IBaseConfig";
 export interface IRagfairConfig extends IBaseConfig {
     kind: "aki-ragfair";
     /** How many seconds should pass before expired offers and procesed + player offers checked if sold */
     runIntervalSeconds: number;
+    /** Default values used to hydrate `runIntervalSeconds` with */
+    runIntervalValues: IRunIntervalValues;
     /** Player listing settings */
     sell: Sell;
     /** Trader ids + should their assorts be listed on flea*/
@@ -16,9 +18,7 @@ export interface Sell {
     /** Settings to control chances of offer being sold */
     chance: Chance;
     /** Settings to control how long it takes for a player offer to sell */
-    time: Time;
-    /** Player offer reputation gain/loss settings */
-    reputation: Reputation;
+    time: MinMax;
     /**Seconds from clicking remove to remove offer from market */
     expireSeconds: number;
 }
@@ -31,13 +31,6 @@ export interface Chance {
     maxSellChancePercent: number;
     /** Min possible sell chance % for a player listed offer */
     minSellChancePercent: number;
-}
-export interface Time extends MinMax {
-    base: number;
-}
-export interface Reputation {
-    gain: number;
-    loss: number;
 }
 export interface Dynamic {
     purchasesAreFoundInRaid: boolean;
@@ -65,6 +58,8 @@ export interface Dynamic {
     nonStackableCount: MinMax;
     /** Range of rating offers for items being listed */
     rating: MinMax;
+    /** Armor specific flea settings */
+    armor: IArmorSettings;
     /** A multipler to apply to individual tpls price just prior to item quality adjustment */
     itemPriceMultiplier: Record<string, number>;
     /** Percentages to sell offers in each currency */
@@ -136,6 +131,10 @@ export interface Blacklist {
     traderItems: boolean;
     /** Maximum level an armor plate can be found in a flea-listed armor item */
     armorPlate: IArmorPlateBlacklistSettings;
+    /** Should specific categories be blacklisted from the flea, true = use blacklist */
+    enableCustomItemCategoryList: boolean;
+    /** Custom category blacklist for parent Ids */
+    customItemCategoryList: string[];
 }
 export interface IArmorPlateBlacklistSettings {
     /** Max level of plates an armor can have without being removed */
@@ -150,4 +149,10 @@ export interface IUnreasonableModPrices {
     handbookPriceOverMultiplier: number;
     /** The new multiplier for items found using above property, e.g. a value of 4 means set items price to 4x handbook price */
     newPriceHandbookMultiplier: number;
+}
+export interface IArmorSettings {
+    /** % chance / 100 that armor plates will be removed from an offer before listing */
+    removeRemovablePlateChance: number;
+    /** What slots are to be removed when removeRemovablePlateChance is true */
+    plateSlotIdToRemovePool: string[];
 }

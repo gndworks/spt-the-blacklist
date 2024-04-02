@@ -70,12 +70,6 @@ export declare class QuestController {
      */
     protected showEventQuestToPlayer(questId: string): boolean;
     /**
-     * Is the quest for the opposite side the player is on
-     * @param playerSide Player side (usec/bear)
-     * @param questId QuestId to check
-     */
-    protected questIsForOtherSide(playerSide: string, questId: string): boolean;
-    /**
      * Handle QuestAccept event
      * Handle the client accepting a quest and starting it
      * Send starting rewards if any to player and
@@ -114,6 +108,12 @@ export declare class QuestController {
      * @returns ItemEvent client response
      */
     completeQuest(pmcData: IPmcData, body: ICompleteQuestRequestData, sessionID: string): IItemEventRouterResponse;
+    /**
+     * Return a list of quests that would fail when supplied quest is completed
+     * @param completedQuestId quest completed id
+     * @returns array of IQuest objects
+     */
+    protected getQuestsFailedByCompletingQuest(completedQuestId: string, pmcProfile: IPmcData): IQuest[];
     /**
      * Remove a quest entirely from a profile
      * @param sessionId Player id
@@ -191,5 +191,5 @@ export declare class QuestController {
      * @param sessionID Session id
      * @returns IItemEventRouterResponse
      */
-    failQuest(pmcData: IPmcData, request: IFailQuestRequestData, sessionID: string): IItemEventRouterResponse;
+    failQuest(pmcData: IPmcData, request: IFailQuestRequestData, sessionID: string, output: IItemEventRouterResponse): IItemEventRouterResponse;
 }

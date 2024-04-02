@@ -70,9 +70,17 @@ export declare class RagfairController {
     protected configServer: ConfigServer;
     protected ragfairConfig: IRagfairConfig;
     constructor(logger: ILogger, timeUtil: TimeUtil, httpResponse: HttpResponseUtil, eventOutputHolder: EventOutputHolder, ragfairServer: RagfairServer, ragfairPriceService: RagfairPriceService, databaseServer: DatabaseServer, itemHelper: ItemHelper, saveServer: SaveServer, ragfairSellHelper: RagfairSellHelper, ragfairTaxService: RagfairTaxService, ragfairSortHelper: RagfairSortHelper, ragfairOfferHelper: RagfairOfferHelper, profileHelper: ProfileHelper, paymentService: PaymentService, handbookHelper: HandbookHelper, paymentHelper: PaymentHelper, inventoryHelper: InventoryHelper, traderHelper: TraderHelper, ragfairHelper: RagfairHelper, ragfairOfferService: RagfairOfferService, ragfairRequiredItemsService: RagfairRequiredItemsService, ragfairOfferGenerator: RagfairOfferGenerator, localisationService: LocalisationService, configServer: ConfigServer);
+    /**
+     * Handles client/ragfair/find
+     * Returns flea offers that match required search parameters
+     * @param sessionID Player id
+     * @param searchRequest Search request data
+     * @returns IGetOffersResult
+     */
     getOffers(sessionID: string, searchRequest: ISearchRequestData): IGetOffersResult;
     /**
-     *  Handle client/ragfair/offer/findbyid
+     * Handle client/ragfair/offer/findbyid
+     * Occurs when searching for `#x` on flea
      * @param sessionId Player id
      * @param request Request data
      * @returns IRagfairOffer
@@ -81,7 +89,7 @@ export declare class RagfairController {
     /**
      * Get offers for the client based on type of search being performed
      * @param searchRequest Client search request data
-     * @param itemsToAdd comes from ragfairHelper.filterCategories()
+     * @param itemsToAdd Comes from ragfairHelper.filterCategories()
      * @param traderAssorts Trader assorts
      * @param pmcProfile Player profile
      * @returns array of offers
@@ -90,7 +98,7 @@ export declare class RagfairController {
     /**
      * Get categories for the type of search being performed, linked/required/all
      * @param searchRequest Client search request data
-     * @param offers ragfair offers to get categories for
+     * @param offers Ragfair offers to get categories for
      * @returns record with templates + counts
      */
     protected getSpecificCategories(pmcProfile: IPmcData, searchRequest: ISearchRequestData, offers: IRagfairOffer[]): Record<string, number>;
@@ -101,16 +109,26 @@ export declare class RagfairController {
     protected addIndexValueToOffers(offers: IRagfairOffer[]): void;
     /**
      * Update a trader flea offer with buy restrictions stored in the traders assort
-     * @param offer flea offer to update
-     * @param profile full profile of player
+     * @param offer Flea offer to update
+     * @param fullProfile Players full profile
      */
-    protected setTraderOfferPurchaseLimits(offer: IRagfairOffer, profile: IAkiProfile): void;
+    protected setTraderOfferPurchaseLimits(offer: IRagfairOffer, fullProfile: IAkiProfile): void;
     /**
      * Adjust ragfair offer stack count to match same value as traders assort stack count
-     * @param offer Flea offer to adjust
+     * @param offer Flea offer to adjust stack size of
      */
     protected setTraderOfferStackSize(offer: IRagfairOffer): void;
+    /**
+     * Is the flea search being performed a 'linked' search type
+     * @param info Search request
+     * @returns True if it is a 'linked' search type
+     */
     protected isLinkedSearch(info: ISearchRequestData): boolean;
+    /**
+     * Is the flea search being performed a 'required' search type
+     * @param info Search request
+     * @returns True if it is a 'required' search type
+     */
     protected isRequiredSearch(info: ISearchRequestData): boolean;
     /**
      * Check all profiles and sell player offers / send player money for listing if it sold
@@ -165,7 +183,7 @@ export declare class RagfairController {
         items: Item[] | null;
         errorMessage: string | null;
     };
-    createPlayerOffer(profile: IAkiProfile, requirements: Requirement[], items: Item[], sellInOnePiece: boolean, amountToSend: number): IRagfairOffer;
+    createPlayerOffer(sessionId: string, requirements: Requirement[], items: Item[], sellInOnePiece: boolean): IRagfairOffer;
     getAllFleaPrices(): Record<string, number>;
     getStaticPrices(): Record<string, number>;
     /**

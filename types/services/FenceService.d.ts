@@ -1,13 +1,12 @@
 import { HandbookHelper } from "@spt-aki/helpers/HandbookHelper";
 import { ItemHelper } from "@spt-aki/helpers/ItemHelper";
 import { PresetHelper } from "@spt-aki/helpers/PresetHelper";
-import { MinMax } from "@spt-aki/models/common/MinMax";
 import { IFenceLevel } from "@spt-aki/models/eft/common/IGlobals";
 import { IPmcData } from "@spt-aki/models/eft/common/IPmcData";
 import { Item, Repairable } from "@spt-aki/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { ITraderAssort } from "@spt-aki/models/eft/common/tables/ITrader";
-import { ITraderConfig } from "@spt-aki/models/spt/config/ITraderConfig";
+import { IBarterScheme, ITraderAssort } from "@spt-aki/models/eft/common/tables/ITrader";
+import { IItemDurabilityCurrentMax, ITraderConfig } from "@spt-aki/models/spt/config/ITraderConfig";
 import { IFenceAssortGenerationValues, IGenerationAssortValues } from "@spt-aki/models/spt/fence/IFenceAssortGenerationValues";
 import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
@@ -64,7 +63,7 @@ export declare class FenceService {
      * @param itemMultipler multipler to use on items
      * @param presetMultiplier preset multipler to use on presets
      */
-    protected adjustAssortItemPrices(assort: ITraderAssort, itemMultipler: number, presetMultiplier: number): void;
+    protected adjustAssortItemPricesByConfigMultiplier(assort: ITraderAssort, itemMultipler: number, presetMultiplier: number): void;
     /**
      * Merge two trader assort files together
      * @param firstAssort assort 1#
@@ -153,14 +152,44 @@ export declare class FenceService {
      * Add item assorts to existing assort data
      * @param assortCount Number to add
      * @param assorts Assorts data to add to
-     * @param baseFenceAssort Base data to draw from
-     * @param itemTypeCounts
+     * @param baseFenceAssortClone Base data to draw from
+     * @param itemTypeLimits
      * @param loyaltyLevel Loyalty level to set new item to
      */
-    protected addItemAssorts(assortCount: number, assorts: ITraderAssort, baseFenceAssort: ITraderAssort, itemTypeCounts: Record<string, {
+    protected addItemAssorts(assortCount: number, assorts: ITraderAssort, baseFenceAssortClone: ITraderAssort, itemTypeLimits: Record<string, {
         current: number;
         max: number;
     }>, loyaltyLevel: number): void;
+    /**
+     * Find an assort item that matches the first parameter, also matches based on upd properties
+     * e.g. salewa hp resource units left
+     * @param rootItemBeingAdded item to look for a match against
+     * @param itemDbDetails Db details of matching item
+     * @param fenceItemAssorts Items to search through
+     * @returns Matching assort item
+     */
+    protected getMatchingItem(rootItemBeingAdded: Item, itemDbDetails: ITemplateItem, fenceItemAssorts: Item[]): Item;
+    /**
+     * Should this item be forced into only 1 stack on fence
+     * @param existingItem Existing item from fence assort
+     * @param itemDbDetails Item we want to add db details
+     * @returns True item should be force stacked
+     */
+    protected itemShouldBeForceStacked(existingItem: Item, itemDbDetails: ITemplateItem): boolean;
+    /**
+     * Adjust price of item based on what is left to buy (resource/uses left)
+     * @param barterSchemes All barter scheme for item having price adjusted
+     * @param itemRoot Root item having price adjusted
+     * @param itemTemplate Db template of item
+     */
+    protected adjustItemPriceByQuality(barterSchemes: Record<string, IBarterScheme[][]>, itemRoot: Item, itemTemplate: ITemplateItem): void;
+    protected getMatchingItemLimit(itemTypeLimits: Record<string, {
+        current: number;
+        max: number;
+    }>, itemTpl: string): {
+        current: number;
+        max: number;
+    };
     /**
      * Find presets in base fence assort and add desired number to 'assorts' parameter
      * @param desiredWeaponPresetsCount
@@ -202,10 +231,10 @@ export declare class FenceService {
     /**
      * Generate a randomised current and max durabiltiy value for an armor item
      * @param itemDetails Item to create values for
-     * @param maxDurabilityMinMaxPercent Max durabiltiy percent min/max values
+     * @param equipmentDurabilityLimits Max durabiltiy percent min/max values
      * @returns Durability + MaxDurability values
      */
-    protected getRandomisedArmorDurabilityValues(itemDetails: ITemplateItem, maxDurabilityMinMaxPercent: MinMax): Repairable;
+    protected getRandomisedArmorDurabilityValues(itemDetails: ITemplateItem, equipmentDurabilityLimits: IItemDurabilityCurrentMax): Repairable;
     /**
      * Construct item limit record to hold max and current item count
      * @param limits limits as defined in config

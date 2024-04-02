@@ -28,6 +28,8 @@ export declare class FenceBaseAssortGenerator {
      * Create base fence assorts dynamically and store in memory
      */
     generateFenceBaseAssorts(): void;
+    protected getItemPrice(itemTpl: string, items: Item[]): number;
+    protected getAmmoBoxPrice(items: Item[]): number;
     /**
      * Add soft inserts + armor plates to an armor
      * @param armor Armor item array to add mods into
