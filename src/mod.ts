@@ -124,7 +124,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     }
 
     if (this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
-      ragfairConfig.runIntervalSeconds = this.advancedConfig.runIntervalSecondsOverride;
+      ragfairConfig.runIntervalValues.outOfRaid = this.advancedConfig.runIntervalSecondsOverride;
     }
 
     if (this.config.enableScarceOffers) {
