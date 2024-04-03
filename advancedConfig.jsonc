@@ -9,7 +9,7 @@
   "bulletDamageMultiplierRedutionFactor": 0.7,
 
   // When enabled, creates more logging, mostly for Platinum to debug things.
-  "enableDebug": true,
+  "enableDebug": false,
 
   // Items that are blacklisted in these categories will remain blacklisted.
   "excludedCategories": [
