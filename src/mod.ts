@@ -16,261 +16,233 @@
 // along with spt-the-blacklist.  If not, see <http://www.gnu.org/licenses/>.
 
 import { DependencyContainer } from "tsyringe";
+import { jsonc } from "jsonc";
+import path from "path";
 
 import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { IPostDBLoadMod } from "@spt-aki/models/external/IPostDBLoadMod";
+import { IPostDBLoadModAsync } from "@spt-aki/models/external/IPostDBLoadModAsync";
 import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt-aki/servers/ConfigServer";
 import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
-import { RagfairOfferGenerator } from "@spt-aki/generators/RagfairOfferGenerator";
-import { RagfairPriceService } from "@spt-aki/services/RagfairPriceService";
-import { Category } from "@spt-aki/models/eft/common/tables/IHandbookBase";
+import { HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
 
-import config from "../config.json";
-import advancedConfig from "../advancedConfig.json";
+import { isBulletOrShotgunShell } from "./helpers";
+import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
 
-class TheBlacklistMod implements IPostDBLoadMod {
+class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
 
   private modName = "[The Blacklist]";
 
   // We to adjust for pricing using a baseline when mods like SPT Realism are used
   private baselineBullet: ITemplateItem;
-  private baselineArmour: ITemplateItem;
 
-  // Store the category IDs of all attachments in the handbook so we don't have to manually enter them in json
-  private attachmentCategoryIds: string[] = [];
+  private blacklistedItemsUpdatedCount = 0;
+  private nonBlacklistedItemsUpdatedCount = 0;
+  private ammoPricesUpdatedCount = 0;
 
-  public postDBLoad(container: DependencyContainer): void {
+  private config;
+  private advancedConfig;
+
+  public async postDBLoadAsync(container: DependencyContainer) {
     this.logger = container.resolve<ILogger>("WinstonLogger");
-
-    // Easiest way to make mod compatible with Lua's flea updater is let the user choose when to load the mod...
-    setTimeout(() => this.initialiseMod(container), (advancedConfig.startDelayInSeconds || 7) * 1000);
-  }
-
-  private initialiseMod(
-    container: DependencyContainer
-  ): void {
+    this.config = await jsonc.read(path.resolve(__dirname, "../config.jsonc"));
+    this.advancedConfig = await jsonc.read(path.resolve(__dirname, "../advancedConfig.jsonc"));
+    
     const databaseServer = container.resolve<DatabaseServer>("DatabaseServer");
     const tables = databaseServer.getTables();
     const configServer = container.resolve<ConfigServer>("ConfigServer");
     const ragfairConfig = configServer.getConfig<IRagfairConfig>(ConfigTypes.RAGFAIR);
-    const ragfairPriceService = container.resolve<RagfairPriceService>("RagfairPriceService");
-    const ragfairOfferGenerator = container.resolve<RagfairOfferGenerator>("RagfairOfferGenerator");
 
     const itemTable = tables.templates.items;
     const handbookItems = tables.templates.handbook.Items;
     const prices = tables.templates.prices;
+    const globals = tables.globals;
 
-    ragfairConfig.dynamic.blacklist.enableBsgList = !config.disableBsgBlacklist;
-    ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = advancedConfig.useTraderPriceForOffersIfHigher != null ? advancedConfig.useTraderPriceForOffersIfHigher : true;
+    this.baselineBullet = itemTable[this.advancedConfig.baselineBulletId];
 
-    this.baselineBullet = itemTable[advancedConfig.baselineBulletId];
-    this.baselineArmour = itemTable[advancedConfig.baselineArmourId];
-
-    let blacklistedItemsUpdatedCount = 0;
-    let nonBlacklistedItemsUpdatedCount = 0;
-    let ammoPricesUpdatedCount = 0;
-    let attachmentPriceLimitedCount = 0;
-
-    if (config.limitMaxPriceOfAttachments) {
-      this.initialiseAttachmentCategoryIds(tables.templates.handbook.Categories);
-    }
+    this.updateRagfairConfig(ragfairConfig);
+    this.updateGlobals(globals);
 
     // Find all items to update by looping through handbook which is a better indicator of useable items.
     handbookItems.forEach(handbookItem => {
       const item = itemTable[handbookItem.Id];
-      const customItemConfig = config.customItemConfigs.find(conf => conf.itemId === item._id);
       const originalPrice = prices[item._id];
 
-      // We found a custom price override to use. That's all we care about for this item. Move on to the next item.
-      if (customItemConfig?.fleaPriceOverride) {
-        prices[item._id] = customItemConfig.fleaPriceOverride;
-        this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
-        blacklistedItemsUpdatedCount++;
-        return;
-      }
+      const customItemConfig = this.config.customItemConfigs.find(conf => conf.itemId === item._id);
 
-      if (customItemConfig?.blacklisted) {
-        this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
-        ragfairConfig.dynamic.blacklist.custom.push(item._id);
+      // We found a custom item config override to use. That's all we care about for this item. Move on to the next item.
+      if (customItemConfig && this.updateItemUsingCustomItemConfig(customItemConfig, item, prices, originalPrice, ragfairConfig)) {
         return;
-      }
-
-      if (config.limitMaxPriceOfAttachments && this.attachmentCategoryIds.includes(handbookItem.ParentId)) {
-        const handbookPrice = handbookItem.Price;
-        const existingFleaPrice = prices[item._id];
-        const maxFleaPrice = handbookPrice * config.maxFleaPriceOfAttachmentsToHandbookPrice;
-        
-        if (existingFleaPrice > maxFleaPrice) {
-          prices[item._id] = maxFleaPrice;
-          attachmentPriceLimitedCount++;
-          this.debug(`Attachment ${item._id} - ${item._name} was updated from ${existingFleaPrice} to ${maxFleaPrice}.`)
-        }
       }
 
       const itemProps = item._props;
 
-      if (config.useBalancedPricingForAllAmmo && this.isBulletOrShotgunShell(item)) {
-        const newPrice = this.getUpdatedAmmoPrice(item);
-        prices[item._id] = newPrice;
-        
-        if (!itemProps.CanSellOnRagfair) {
-          blacklistedItemsUpdatedCount++;
-          // Set to true so we avoid recalculating ammo price again for blacklisted ammo below.
-          itemProps.CanSellOnRagfair = true;
-        } else {
-          nonBlacklistedItemsUpdatedCount++;
-        }
-        ammoPricesUpdatedCount++;
+      if (isBulletOrShotgunShell(item)) {
+        this.updateAmmoPrice(item, prices);
       }
 
       if (!itemProps.CanSellOnRagfair) {
         // Some blacklisted items are hard to balance or just shouldn't be allowed so we will keep them blacklisted.
-        if (advancedConfig.excludedCategories.some(category => category === handbookItem.ParentId)) {
+        if (this.advancedConfig.excludedCategories.some(category => category === handbookItem.ParentId)) {
           ragfairConfig.dynamic.blacklist.custom.push(item._id);
-          this.debug(`Blacklisted item ${item._id} - ${item._name} because we are excluding handbook category ${handbookItem.ParentId}.`);
+          this.debug(`Ignored item ${item._id} - ${item._name} because we are excluding handbook category ${handbookItem.ParentId}.`);
           return;
         }
 
-        itemProps.CanSellOnRagfair = config.disableBsgBlacklist;
-
-        prices[item._id] = this.getUpdatedPrice(item, prices);
+        prices[item._id] = this.getUpdatedPrice(handbookItem, item, prices);
 
         if (!prices[item._id]) {
           this.debug(`There are no flea prices for ${item._id} - ${item._name}!`);
           return;
         }
 
+        if (!isNaN(customItemConfig?.priceMultiplier)) {
+          prices[item._id] *= customItemConfig.priceMultiplier;
+        }
+
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
-        blacklistedItemsUpdatedCount++;
-      }
-
-      const itemSpecificPriceMultiplier = customItemConfig?.priceMultiplier || 1;
-      prices[item._id] *= itemSpecificPriceMultiplier;
-    });
-
-    // Typescript hack to call protected method
-    (ragfairPriceService as any).generateDynamicPrices();
-    ragfairOfferGenerator.generateDynamicOffers().then(() => {
-      this.logger.success(`${this.modName}: Success! Found ${blacklistedItemsUpdatedCount} blacklisted & ${nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
-      if (config.limitMaxPriceOfAttachments) {
-        this.logger.success(`${this.modName}: config.limitMaxPriceOfAttachments is enabled! Updated ${attachmentPriceLimitedCount} flea prices of attachments.`);
-      }
-      if (config.useBalancedPricingForAllAmmo) {
-        this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${ammoPricesUpdatedCount} ammo prices.`);
+        this.blacklistedItemsUpdatedCount++;
       }
     });
+
+    this.logger.success(`${this.modName}: Success! Found ${this.blacklistedItemsUpdatedCount} blacklisted & ${this.nonBlacklistedItemsUpdatedCount} non-blacklisted items to update.`);
+    
+    if (this.config.useBalancedPricingForAllAmmo) {
+      this.logger.success(`${this.modName}: config.useBalancedPricingForAllAmmo is enabled! Updated ${this.ammoPricesUpdatedCount} ammo prices.`);
+    }
   }
 
-  private initialiseAttachmentCategoryIds(handbookCategories: Category[]) {
-    const weaponPartsAndModsId = "5b5f71a686f77447ed5636ab";
-    const weaponPartsChildrenCategories = this.getChildCategoriesRecursively(handbookCategories, weaponPartsAndModsId);
-    const childrenIds = weaponPartsChildrenCategories.map(category => category.Id);
+  private updateRagfairConfig(ragfairConfig: IRagfairConfig) {
+    ragfairConfig.dynamic.blacklist.enableBsgList = !this.config.disableBsgBlacklist;
 
-    this.attachmentCategoryIds.push(weaponPartsAndModsId);
-    this.attachmentCategoryIds = this.attachmentCategoryIds.concat(childrenIds);
-  }
-
-  private getChildCategoriesRecursively(handbookCategories: Category[], parentId: string): Category[] {
-    const childCategories = handbookCategories.filter(category => category.ParentId === parentId);
-    const grandChildrenCategories = childCategories.reduce(
-      (memo, category) => memo.concat(this.getChildCategoriesRecursively(handbookCategories, category.Id)), 
-      []
-    );
-  
-    return childCategories.concat(grandChildrenCategories);
-  }
-
-  private getUpdatedPrice(item: ITemplateItem, prices: Record<string, number>): number | undefined {
-    // Note that this price can be affected by other mods like Lua's market updater.
-    const currentFleaPrice = prices[item._id];
-    let newPrice: number;
-
-    if (this.isBulletOrShotgunShell(item)) {
-      newPrice = this.getUpdatedAmmoPrice(item);
-    } else if (this.isArmour(item)) {
-      newPrice = this.getUpdatedArmourPrice(item);
-    } else if (this.isGun(item) && currentFleaPrice == null) {
-      newPrice = this.getFallbackGunPrice();
+    if (this.advancedConfig.useTraderPriceForOffersIfHigher != null) {
+      ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = !!this.advancedConfig.useTraderPriceForOffersIfHigher;
     }
 
-    // Avoids NaN. Also we shouldn't have any prices of 0.
-    const price = newPrice || currentFleaPrice;
-    return price && price * config.blacklistedItemPriceMultiplier;
+    if (this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
+      ragfairConfig.runIntervalValues.outOfRaid = this.advancedConfig.runIntervalSecondsOverride;
+    }
+
+    if (this.config.enableScarceOffers) {
+      this.updateRagfairConfigToHaveScarceOffers(ragfairConfig);
+    }
   }
 
-  private isBulletOrShotgunShell(item: ITemplateItem): boolean {
-    const props = item._props;
-    return props.ammoType === "bullet" || props.ammoType === "buckshot";
+  private updateRagfairConfigToHaveScarceOffers(ragfairConfig: IRagfairConfig) {
+    const minMaxPropertiesToOverride = ["offerItemCount", "stackablePercent", "nonStackableCount"];
+
+    for (const propertyToOverride of minMaxPropertiesToOverride) {
+      ragfairConfig.dynamic[propertyToOverride].max = this.advancedConfig[`${propertyToOverride}Override`].max;
+      ragfairConfig.dynamic[propertyToOverride].min = this.advancedConfig[`${propertyToOverride}Override`].min;
+    }
+
+    ragfairConfig.dynamic.barter.chancePercent = 0;
+    ragfairConfig.dynamic.pack.chancePercent = 0;
   }
 
-  private isArmour(item: ITemplateItem): boolean {
-    return Number(item._props.armorClass) > 0 && item._props.armorZone?.some(zone => zone === "Chest")
+  private updateGlobals(globals: IGlobals) {
+    const ragfairConfig = globals.config.RagFair;
+
+    if (this.config.addExtraOfferSlot) {
+      for (const settingForBracket of ragfairConfig.maxActiveOfferCount) {
+        settingForBracket.count += this.advancedConfig.extraOfferSlotsToAdd;
+      }
+    }
   }
 
-  // Some blacklisted guns are very cheap because they don't have a flea price, just a handbook price. The ones listed below will get a much higher default price.
-  private isGun(item: ITemplateItem): boolean {
-    const marksmanRiflesItemCategoryId = "5447b6194bdc2d67278b4567";
-    const assaultRiflesItemCategoryId = "5447b5f14bdc2d61278b4567";
-    const sniperRiflesItemCategoryId = "5447b6254bdc2dc3278b4568";
-    const smgsItemCategoryId = "5447b5e04bdc2d62278b4567";
-    const carbinesItemCategoryId = "5447b5fc4bdc2d87278b4567";
-    const gunCategories = [marksmanRiflesItemCategoryId, assaultRiflesItemCategoryId, sniperRiflesItemCategoryId, smgsItemCategoryId, carbinesItemCategoryId];
+  // Returns true if we updated something using the customItemConfig so we can skip to the next handbook item.
+  private updateItemUsingCustomItemConfig(customItemConfig, item: ITemplateItem , prices: Record<string, number>, originalPrice: number, ragfairConfig: IRagfairConfig): boolean {
+    if (customItemConfig?.blacklisted) {
+      this.debug(`Blacklisted item ${item._id} - ${item._name} due to its customItemConfig.`);
 
-    return gunCategories.includes(item._parent);
+      ragfairConfig.dynamic.blacklist.custom.push(item._id);
+
+      if (item._props.CanSellOnRagfair) {
+        this.nonBlacklistedItemsUpdatedCount++
+      }
+
+      return true;
+    }
+
+    if (customItemConfig?.fleaPriceOverride) {
+      prices[item._id] = customItemConfig.fleaPriceOverride;
+
+      this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]} (price override).`);
+      
+      if (item._props.CanSellOnRagfair) {
+        this.nonBlacklistedItemsUpdatedCount++
+      }
+
+      return true;
+    }
+
+    return false;
   }
 
-  private getUpdatedAmmoPrice(item: ITemplateItem) {
+  private updateAmmoPrice(item: ITemplateItem, prices: Record<string, number>) {
+    const itemProps = item._props;
+
+    // We don't care about this standard ammo item if we haven't enabled useBalancedPricingForAllAmmo
+    if (itemProps.CanSellOnRagfair && !this.config.useBalancedPricingForAllAmmo) {
+      return;
+    }
+
+    const newPrice = this.getUpdatedAmmoPrice(item);
+    prices[item._id] = newPrice;
+
+    if (!itemProps.CanSellOnRagfair) {
+      this.blacklistedItemsUpdatedCount++;
+    } else {
+      this.nonBlacklistedItemsUpdatedCount++;
+    }
+
+    this.ammoPricesUpdatedCount++;
+  }
+
+  private getUpdatedAmmoPrice(item: ITemplateItem): number {
     const baselinePen = this.baselineBullet._props.PenetrationPower;
     const baselineDamage = this.baselineBullet._props.Damage;
-
+  
     const basePenetrationMultiplier = item._props.PenetrationPower / baselinePen;
     const baseDamageMultiplier = item._props.Damage / baselineDamage;
-
+  
     let penetrationMultiplier: number;
-    if (basePenetrationMultiplier > 1) {
+
+    // We are checking for > 0.99 because we want the baseline bullet (mult of 1) to be close to its baseline price.
+    if (basePenetrationMultiplier > 0.99) {
       // A good gradient to make higher power rounds more expensive
-      penetrationMultiplier = 7 * basePenetrationMultiplier - 6;
+      penetrationMultiplier = 3 * basePenetrationMultiplier - 2;
     } else {
-      // Due to maths above, its really easy to go < 1. The baseline ammo is mid tier with a reasonable 1000 rouble each. Ammo weaker than this tend to be pretty crap so we'll make it much cheaper
+      // The baseline ammo is mid tier with a reasonable 1000 rouble each. Ammo weaker than this tend to be pretty crap so we'll make it much cheaper
       const newMultiplier = basePenetrationMultiplier * 0.7;
       penetrationMultiplier = newMultiplier < 0.1 ? 0.1 : newMultiplier;
     }
-
+  
     // Reduces the effect of the damage multiplier so high DMG rounds aren't super expensive.
     // Eg. let baseDamageMultiplier = 2 & bulletDamageMultiplierRedutionFactor = 0.7. Instead of a 2x price when a bullet is 2x damage, we instead get:
     // 2 + (1 - 2) * 0.7 = 2 - 0.7 = 1.3x the price.
-    const damageMultiplier = baseDamageMultiplier + (1 - baseDamageMultiplier) * advancedConfig.bulletDamageMultiplierRedutionFactor; 
-
-    return advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * config.blacklistedAmmoAdditionalPriceMultiplier;
+    const damageMultiplier = baseDamageMultiplier + (1 - baseDamageMultiplier) * this.advancedConfig.bulletDamageMultiplierRedutionFactor; 
+  
+    return this.advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * this.config.blacklistedAmmoAdditionalPriceMultiplier;
   }
 
-  // Some default armour prices are too high like the Zabralo so I want a more balanced way to calculate the price.
-  private getUpdatedArmourPrice(item: ITemplateItem) {
-    const baselineArmourClass = Number(this.baselineArmour._props.armorClass);
+  private getUpdatedPrice(handbookItem: HandbookItem, item: ITemplateItem, prices: Record<string, number>): number | undefined {
+    // If a flea price doesn't exist for an item, we can multiply its handbook price which usually exists.
+    if (prices[item._id] == null) {
+      const handbookPrice = handbookItem.Price;
 
-    // Instead of doing a simple multiplier by dividing the two armour classes, this will give us a much bigger price range for different tiered armours.
-    const armourClassCost = (Number(item._props.armorClass) - baselineArmourClass) * advancedConfig.pricePerArmourClassStep;
-    const baseArmourWeightMultiplier = advancedConfig.baselineArmourWeight / item._props.Weight;
+      return handbookPrice * this.advancedConfig.handbookPriceMultiplier;
+    }
 
-    // Reduces the effect of the weight multiplier so some lighter armour aren't super expensive.
-    // Eg. let baseArmourWeightMultiplier = 2 & armourWeightMultiplierReductionFactor = 0.7. Instead of a 2x price when an armour is half as light as the baseline, we instead get:
-    // 2 + (1 - 2) * 0.7 = 2 - 0.7 = 1.3x the price.
-    const armourWeightMultiplier = baseArmourWeightMultiplier + (1 - baseArmourWeightMultiplier) * advancedConfig.armourWeightMultiplierReductionFactor;
-
-    return (advancedConfig.baselineArmourPrice + armourClassCost) * armourWeightMultiplier * config.blacklistedArmourAdditionalPriceMultiplier;
-  }
-
-  private getFallbackGunPrice() {
-    return advancedConfig.gunPriceFallback || 100000;
+    return prices[item._id] * this.config.blacklistedItemPriceMultiplier;
   }
 
   private debug(message: string) {
-    if (advancedConfig.enableDebug) {
+    if (this.advancedConfig.enableDebug) {
       this.logger.debug(`${this.modName}: ${message}`);
     }
   }
