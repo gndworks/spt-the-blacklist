@@ -6,10 +6,10 @@
   "enableFasterSales": true,
 
   // Reduces the number of offers and quantities per offer to make the flea experience more hardcore. Highly recommend to enable but default is false.
-  "enableScarceOffers": true,
+  "enableScarceOffers": false,
 
   // Adds an extra offer for your current flea market rating bracket. So a new account at level 15 can create 3 offers instead of 2. Default is false. Extra amount is configurable in advancedConfigs.
-  "addExtraOfferSlot": true,
+  "addExtraOfferSlot": false,
 
   // Balances the flea price of all ammo types, not just the blacklisted ammo types. Can be useful if you find some ammo prices are unbalanced, this generally makes them very balanced for what they do. Default false.
   "useBalancedPricingForAllAmmo": false,
