@@ -123,8 +123,12 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       ragfairConfig.dynamic.useTraderPriceForOffersIfHigher = !!this.advancedConfig.useTraderPriceForOffersIfHigher;
     }
 
-    if (this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
+    if (!this.config.enableSlowerSales && this.config.enableFasterSales && !isNaN(this.advancedConfig.runIntervalSecondsOverride)) {
       ragfairConfig.runIntervalValues.outOfRaid = this.advancedConfig.runIntervalSecondsOverride;
+    }
+
+    if (this.config.enableSlowerSales && this.advancedConfig.slowerSalesTime) {
+      ragfairConfig.sell.time = this.advancedConfig.slowerSalesTime;
     }
 
     if (this.config.enableScarceOffers) {

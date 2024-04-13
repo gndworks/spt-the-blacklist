@@ -27,6 +27,12 @@
   // Overrides ragfairConfig.runIntervalValues.outOfRaid if config.enableFasterSales is true. Default 3s.
   "runIntervalSecondsOverride": 3,
 
+  // Sale times when slower sales is enabled.
+  "slowerSalesTime": {
+    "min": 5,
+    "max": 10
+  },
+
   // When config.enableScarceOffers is true, use these values to limit the number of offers on the flea.
   "offerItemCountOverride": {
     "max": 4,

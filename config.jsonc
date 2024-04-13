@@ -5,6 +5,9 @@
   // Make cheap offers sell faster. Default true.
   "enableFasterSales": true,
 
+  // Makes your sales go through slower. Encourages you to sell some items in bulk instead of selling everything to the flea. Around 5 mins. Overwrites `enableFasterSales` if this is true. Default false.
+  "enableSlowerSales": false,
+
   // Reduces the number of offers and quantities per offer to make the flea experience more hardcore. Highly recommend to enable but default is false.
   "enableScarceOffers": false,
 
