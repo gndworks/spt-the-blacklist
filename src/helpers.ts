@@ -1,4 +1,4 @@
-import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
+import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 
 export function isBulletOrShotgunShell(item: ITemplateItem): boolean {
   const props = item._props;
