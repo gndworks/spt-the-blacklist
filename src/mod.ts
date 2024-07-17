@@ -19,17 +19,17 @@ import { DependencyContainer } from "tsyringe";
 import { jsonc } from "jsonc";
 import path from "path";
 
-import { DatabaseServer } from "@spt-aki/servers/DatabaseServer";
-import { IPostDBLoadModAsync } from "@spt-aki/models/external/IPostDBLoadModAsync";
-import { ILogger } from "@spt-aki/models/spt/utils/ILogger";
-import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { ConfigServer } from "@spt-aki/servers/ConfigServer";
-import { IRagfairConfig } from "@spt-aki/models/spt/config/IRagfairConfig";
-import { ConfigTypes } from "@spt-aki/models/enums/ConfigTypes";
-import { HandbookItem } from "@spt-aki/models/eft/common/tables/IHandbookBase";
+import { DatabaseServer } from "@spt/servers/DatabaseServer";
+import { IPostDBLoadModAsync } from "@spt/models/external/IPostDBLoadModAsync";
+import { ILogger } from "@spt/models/spt/utils/ILogger";
+import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
+import { ConfigServer } from "@spt/servers/ConfigServer";
+import { IRagfairConfig } from "@spt/models/spt/config/IRagfairConfig";
+import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
+import { HandbookItem } from "@spt/models/eft/common/tables/IHandbookBase";
 
 import { isBulletOrShotgunShell } from "./helpers";
-import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
+import { IGlobals } from "@spt/models/eft/common/IGlobals";
 
 class TheBlacklistMod implements IPostDBLoadModAsync {
   private logger: ILogger;
