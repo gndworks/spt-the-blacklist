@@ -71,7 +71,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
       const item = itemTable[handbookItem.Id];
       const originalPrice = prices[item._id];
 
-      const customItemConfig = this.config.customItemConfigs.find(conf => conf.itemId === item._id);
+      const customItemConfig = this.config.customItemConfigs.find(conf => conf.itemId === item._id || conf.itemId == item._parent);
 
       // We found a custom item config override to use. That's all we care about for this item. Move on to the next item.
       if (customItemConfig && this.updateItemUsingCustomItemConfig(customItemConfig, item, prices, originalPrice, ragfairConfig)) {

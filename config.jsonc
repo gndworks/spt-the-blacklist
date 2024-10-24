@@ -25,6 +25,11 @@
 
   // You can manually add flea prices to items, set a multiplier to their existing price or blacklist them entirely.
   "customItemConfigs": [
+	{
+	  // Headwear parent id, this fixes all blacklisted helmets having extremely low prices on flea
+	  "itemId": "5a341c4086f77401f2541505",
+	  "priceMultiplier": 12
+	},
     {
       // .338 AP round, the best round in the game so it's quite expensive. This also demonstrates the use of the priceMultiplier property. You can lower this if you think it's too expensive.",
       "itemId": "5fc382a9d724d907e2077dab",
