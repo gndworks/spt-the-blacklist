@@ -1,24 +1,24 @@
 {
     "name": "The Blacklist",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "main": "src/mod.js",
     "license": "GPLv3",
     "author": "Platinum",
-    "sptVersion": "3.9.*",
+    "sptVersion": "3.10.*",
     "scripts": {
         "setup": "npm i",
         "build": "node ./packageBuild.ts"
     },
     "devDependencies": {
-        "@types/node": "16.18.10",
+        "@types/node": "~20.11",
         "@typescript-eslint/eslint-plugin": "5.46.1",
         "@typescript-eslint/parser": "5.46.1",
         "bestzip": "2.2.1",
         "eslint": "8.30.0",
-        "fs-extra": "11.1.0",
+        "fs-extra": "~11.2",
         "glob": "8.0.3",
-        "tsyringe": "4.7.0",
-        "typescript": "4.9.4",
+        "tsyringe": "4.8.0",
+        "typescript": "5.4",
         "jsonc": "^2.0.0"
     }
 }

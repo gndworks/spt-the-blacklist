@@ -26,7 +26,7 @@ import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { IRagfairConfig } from "@spt/models/spt/config/IRagfairConfig";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
-import { HandbookItem } from "@spt/models/eft/common/tables/IHandbookBase";
+import { IHandbookItem } from "@spt/models/eft/common/tables/IHandbookBase";
 
 import { isBulletOrShotgunShell } from "./helpers";
 import { IGlobals } from "@spt/models/eft/common/IGlobals";
@@ -234,7 +234,7 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
     return this.advancedConfig.baselineBulletPrice * penetrationMultiplier * damageMultiplier * this.config.blacklistedAmmoAdditionalPriceMultiplier;
   }
 
-  private getUpdatedPrice(handbookItem: HandbookItem, item: ITemplateItem, prices: Record<string, number>): number | undefined {
+  private getUpdatedPrice(handbookItem: IHandbookItem, item: ITemplateItem, prices: Record<string, number>): number | undefined {
     // If a flea price doesn't exist for an item, we can multiply its handbook price which usually exists.
     if (prices[item._id] == null) {
       const handbookPrice = handbookItem.Price;
