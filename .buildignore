@@ -5,6 +5,7 @@
 /.eslintrc.json
 /.git
 /.github
+/.gitattributes
 /.gitignore
 /.gitlab
 /.nvmrc
@@ -18,3 +19,5 @@
 /package-lock.json
 /tsconfig.json
 /types
+LICENSE
+README.md

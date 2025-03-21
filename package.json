@@ -1,10 +1,10 @@
 {
   "name": "The Blacklist",
-  "version": "2.0.2",
+  "version": "2.0.3b",
   "main": "src/mod.js",
   "license": "GPLv3",
   "author": "Platinum",
-  "sptVersion": "3.10.*",
+  "sptVersion": "3.11.*",
   "scripts": {
     "setup": "npm i",
     "build": "node ./build.mjs"
