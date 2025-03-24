@@ -105,6 +105,9 @@ class TheBlacklistMod implements IPostDBLoadModAsync {
 
         this.debug(`Updated ${item._id} - ${item._name} flea price from ${originalPrice} to ${prices[item._id]}.`);
 
+        // Untested. Should allow blacklisted items to be sold but not sure of other effects.
+        itemProps.CanSellOnRagfair = true;
+
         this.blacklistedItemsUpdatedCount++;
       }
     });
